@@ -12,7 +12,7 @@ import {
   ActivityPoints,
   DEFAULT_ACTIVITY_POINTS,
   PointsTransaction
-} from '@/lib/types/gamification'
+} from '@/types/gamification'
 
 // Types
 export type GamificationEvent = {

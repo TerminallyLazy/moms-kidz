@@ -1,9 +1,12 @@
 "use client"
 
 import { Toaster } from 'sonner'
-import { AuthProvider } from "./auth-provider"
+import { AuthProvider } from "@/contexts/auth-context"
 import { GamificationProvider } from "@/contexts/gamification-context"
-import { SessionProvider } from "next-auth/react"
+import { InteractionProvider } from "@/components/analytics/interaction-tracker"
+import { ThemeProvider } from "./theme-provider"
+import { ShortcutsProvider } from "./shortcuts-provider"
+import { CommandMenu } from "@/components/command-menu"
 
 interface ClientProvidersProps {
   children: React.ReactNode
@@ -11,13 +14,28 @@ interface ClientProvidersProps {
 
 export function ClientProviders({ children }: ClientProvidersProps) {
   return (
-    <SessionProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem
+      disableTransitionOnChange
+    >
       <AuthProvider>
         <GamificationProvider>
-          {children}
-          <Toaster richColors position="top-right" />
+          <InteractionProvider>
+            <ShortcutsProvider>
+              <CommandMenu />
+              {children}
+              <Toaster 
+                position="top-right"
+                richColors
+                closeButton
+                theme="system"
+              />
+            </ShortcutsProvider>
+          </InteractionProvider>
         </GamificationProvider>
       </AuthProvider>
-    </SessionProvider>
+    </ThemeProvider>
   )
 }

@@ -1,0 +1,96 @@
+# Dependencies
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Next.js
+.next
+out
+
+# Testing
+coverage
+.nyc_output
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build
+build
+dist
+
+# Misc
+*.pem
+*.log
+*.pid
+*.seed
+*.pid.lock
+
+# Cache
+.npm
+.eslintcache
+.stylelintcache
+
+# Supabase
+.supabase
+
+# Tests
+__tests__
+test
+tests
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Documentation
+docs
+*.md
+LICENSE
+
+# Development configs
+*.config.js
+*.config.ts
+tsconfig.json
+.prettierrc
+.eslintrc
+.editorconfig
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+.circleci
+
+# Temporary files
+*.tmp
+*.temp
+.cache

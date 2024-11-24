@@ -2,9 +2,9 @@ import { AnimatedCard } from "@/components/ui/animated-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { BookOpen, Calendar, Heart, MessageCircle, Sparkles, Sun, Users } from "lucide-react";
-import { InteractionProvider } from "@/components/interaction-tracker";
-import { HomeData } from "./_components/home-data";
-import { HomeFeatures } from "./_components/home-features";
+// import { InteractionProvider } from "@/components/interaction-tracker";
+import { HomeData } from "../components/features/home-data";
+import { HomeFeatures } from "../components/features/home-features";
 
 const features = [
 {

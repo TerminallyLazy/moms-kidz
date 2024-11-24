@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ClientProviders } from "@/components/providers/client-providers"
-import { ThemeProvider } from "@/components/providers/theme-provider"
-import { MainNav } from "@/components/navigation-menu"
+import { ClientLayout } from "@/components/layout/client-layout"
 import { cn } from "@/lib/utils"
 import Script from 'next/script'
 import '../styles/globals.css'
@@ -39,22 +38,11 @@ export default function RootLayout({
           nonce="social_media_nonce"
         />
       </head>
-      <body className={cn("min-h-screen bg-background antialiased", inter)}>
+      <body className={cn("min-h-screen bg-background antialiased", inter.className)}>
         <ClientProviders>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-          >
-            <div className="relative flex min-h-screen flex-col">
-              <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <MainNav />
-              </header>
-              <main className="flex-1">
-                {children}
-              </main>
-            </div>
-          </ThemeProvider>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
         </ClientProviders>
       </body>
     </html>

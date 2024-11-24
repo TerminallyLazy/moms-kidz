@@ -1,7 +1,7 @@
-# MK Windsurf Project Design Document
+# Mom's Kidz Project Design Document
 
 ## Project Overview
-MK Windsurf is a modern web application built with Next.js, focusing on providing a comprehensive platform for windsurfing enthusiasts. The application features both public-facing content and member-specific features.
+Mom's Kidz is a modern web application built with Next.js, focusing on providing a comprehensive platform for new moms and their journey through motherhood and beyond. The moms are the first line of support for their children, and this platform is designed to support them. The application features both public-facing content and member-specific features.
 
 ## Technology Stack
 - **Frontend Framework**: Next.js 13+ with App Router
