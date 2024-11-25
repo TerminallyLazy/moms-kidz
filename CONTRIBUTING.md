@@ -4,7 +4,7 @@ First off, thank you for considering contributing to Mom's Kidz! It's people lik
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by our Code of Conduct. By participating, you are expected to uphold this code.
+This project and everyone participating in it is governed by our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
 
 ## How Can I Contribute?
 
@@ -21,7 +21,7 @@ Before creating bug reports, please check the issue list as you might find out t
 
 ### Suggesting Enhancements
 
-Enhancement suggestions are tracked as GitHub issues. When you are creating an enhancement suggestion, please include:
+Enhancement suggestions are tracked as GitHub issues. When creating an enhancement suggestion, please include:
 
 * Use a clear and descriptive title
 * Provide a step-by-step description of the suggested enhancement
@@ -31,64 +31,88 @@ Enhancement suggestions are tracked as GitHub issues. When you are creating an e
 
 ### Pull Requests
 
-* Fill in the required template
-* Do not include issue numbers in the PR title
-* Include screenshots and animated GIFs in your pull request whenever possible
-* Follow the JavaScript/TypeScript styleguides
-* Include thoughtfully-worded, well-structured tests
-* Document new code
-* End all files with a newline
+1. Fork the repo and create your branch from `main`
+2. If you've added code that should be tested, add tests
+3. If you've changed APIs, update the documentation
+4. Ensure the test suite passes
+5. Make sure your code lints
+6. Issue that pull request!
 
 ## Development Process
 
-1. Fork the repo
-2. Create a new branch from `main`
-3. Make your changes
-4. Run the tests
-5. Push to your fork and submit a pull request
-
-### Setup Development Environment
-
+1. Clone the repository:
 ```bash
-# Clone your fork
-git clone https://github.com/your-username/moms-kidz-v3.git
-
-# Navigate to the project directory
+git clone https://github.com/yourusername/moms-kidz-v3.git
 cd moms-kidz-v3
+```
 
-# Install dependencies
+2. Install dependencies:
+```bash
 npm install
+```
 
-# Copy environment variables
+3. Create a branch for your feature:
+```bash
+git checkout -b feature/your-feature-name
+```
+
+4. Set up your environment:
+```bash
 cp .env.example .env.local
+```
+Then edit `.env.local` with your values.
 
-# Start development server
+5. Start the development server:
+```bash
 npm run dev
 ```
 
-### Style Guide
+### Database Management
 
-* Use TypeScript
-* Follow the existing code style
-* Use meaningful variable names
-* Comment your code when necessary
-* Keep functions small and focused
-* Use async/await instead of promises
-* Use ES6+ features when possible
+When making changes to the database schema:
+
+1. Create a new migration file in `supabase/migrations`
+2. Test your migration locally:
+```bash
+npm run db:migrate
+```
+
+3. Include the migration in your pull request
+
+### Code Style
+
+We use ESLint and Prettier to maintain code quality. Before submitting a PR:
+
+```bash
+npm run format
+npm run lint
+```
 
 ### Commit Messages
 
-* Use the present tense ("Add feature" not "Added feature")
-* Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-* Limit the first line to 72 characters or less
-* Reference issues and pull requests liberally after the first line
+We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+* `feat:` - A new feature
+* `fix:` - A bug fix
+* `docs:` - Documentation only changes
+* `style:` - Changes that do not affect the meaning of the code
+* `refactor:` - A code change that neither fixes a bug nor adds a feature
+* `perf:` - A code change that improves performance
+* `test:` - Adding missing tests or correcting existing tests
+* `chore:` - Changes to the build process or auxiliary tools
+
+Example:
+```
+feat: add user authentication system
+```
 
 ### Testing
 
-* Write tests for new features
-* Run existing tests before submitting a PR
-* Ensure all tests pass
-* Include both unit and integration tests when applicable
+Please write tests for new code you create. To run tests:
+
+```bash
+npm test
+```
 
 ## Project Structure
 
@@ -96,47 +120,24 @@ npm run dev
 src/
 ├── app/                    # Next.js 13 App Router
 ├── components/            # React Components
-│   ├── ui/               # UI Components
-│   ├── features/         # Feature Components
-│   └── providers/        # Context Providers
-├── hooks/                # Custom React Hooks
-├── lib/                  # Utility Functions
-├── styles/              # Global Styles
-└── types/               # TypeScript Types
+├── contexts/             # React Context providers
+├── hooks/                # Custom React hooks
+├── lib/                  # Core utilities
+├── types/                # TypeScript definitions
+└── utils/                # Utility functions
 ```
 
-## Database Schema
+## Documentation
 
-Please refer to `src/lib/db/schema.sql` for the current database schema.
-
-## Additional Notes
-
-### Git Workflow
-
-1. Create a new branch for each feature/fix
-2. Use meaningful branch names (feature/add-login, fix/auth-redirect)
-3. Keep commits atomic and focused
-4. Rebase your branch on main before submitting a PR
-5. Squash commits if necessary
-
-### Code Review Process
-
-1. All submissions require review
-2. Changes must be approved by at least one maintainer
-3. Reviews should be thorough and constructive
-4. Address all review comments
-5. Update documentation if necessary
-
-### Documentation
-
-* Keep README.md up to date
-* Document all new features
-* Update API documentation when necessary
-* Include JSDoc comments for TypeScript interfaces and functions
-* Update changelog for significant changes
+* Comment your code
+* Update README.md if you change functionality
+* Add JSDoc comments for functions and components
+* Update type definitions when changing interfaces
 
 ## Questions?
 
-Feel free to open an issue with your question or contact the maintainers directly.
+Feel free to open an issue with the tag `question`.
 
-Thank you for contributing to Mom's Kidz! 🎉
+## License
+
+By contributing, you agree that your contributions will be licensed under the MIT License.

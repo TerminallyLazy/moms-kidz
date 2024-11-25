@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuthContext } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 import { useActivities } from "@/hooks/use-activities"
 import { Award, Calendar, Star, Trophy } from "lucide-react"
 import { motion } from "framer-motion"
@@ -39,7 +39,7 @@ function StatCard({ title, value, description, icon }: StatCardProps) {
 }
 
 export function Stats() {
-  const { stats } = useAuthContext()
+  const { profile } = useAuth()
   const { activities } = useActivities()
   const activityStats = activities ? activities.length : 0
 
@@ -49,25 +49,32 @@ export function Stats() {
     return activityMonth === currentMonth
   }).length
 
+  // Use profile stats or default values
+  const stats = profile?.stats || {
+    level: 1,
+    totalPoints: 0,
+    achievements: []
+  }
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <StatCard
         title="Level"
-        value={stats?.level || 1}
+        value={stats.level}
         description="Keep going to level up!"
         icon={<Trophy className="h-4 w-4 text-primary" />}
       />
       
       <StatCard
         title="Total Points"
-        value={stats?.totalPoints || 0}
+        value={stats.totalPoints}
         description="Points earned from activities"
         icon={<Star className="h-4 w-4 text-yellow-500" />}
       />
       
       <StatCard
         title="Achievements"
-        value={stats?.achievements?.length || 0}
+        value={stats.achievements?.length || 0}
         description="Unlocked achievements"
         icon={<Award className="h-4 w-4 text-purple-500" />}
       />

@@ -9,6 +9,7 @@ import { Calendar, Clock, Star, Trophy } from "lucide-react"
 import { motion } from "framer-motion"
 import { useGamification } from "@/contexts/gamification-context"
 import type { Challenge } from "@/contexts/gamification-context"
+import { startOfDay, addDays } from 'date-fns'
 
 const CHALLENGE_TYPES = [
   { id: 'daily', label: 'Daily', icon: Clock },
@@ -32,9 +33,14 @@ const SAMPLE_CHALLENGES: Challenge[] = [
       points: 50,
       badges: ['consistent_logger'],
     },
-    startDate: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-    endDate: new Date(new Date().setHours(0, 0, 0, 0) + 24 * 60 * 60 * 1000).toISOString(),
+    startDate: startOfDay(new Date()),
+    endDate: addDays(startOfDay(new Date()), 1),
     status: 'active',
+    points: 50,
+    progress: 0,
+    maxProgress: 3,
+    completed: false,
+    icon: 'Clock'
   },
   {
     id: 'weekly_photos',
@@ -50,9 +56,14 @@ const SAMPLE_CHALLENGES: Challenge[] = [
       points: 100,
       badges: ['photographer'],
     },
-    startDate: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-    endDate: new Date(new Date().setHours(0, 0, 0, 0) + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    startDate: startOfDay(new Date()),
+    endDate: addDays(startOfDay(new Date()), 7),
     status: 'active',
+    points: 100,
+    progress: 0,
+    maxProgress: 5,
+    completed: false,
+    icon: 'Calendar'
   },
   {
     id: 'special_milestone',
@@ -68,9 +79,14 @@ const SAMPLE_CHALLENGES: Challenge[] = [
       points: 200,
       badges: ['milestone_master'],
     },
-    startDate: new Date(new Date().setHours(0, 0, 0, 0)).toISOString(),
-    endDate: new Date(new Date().setHours(0, 0, 0, 0) + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    startDate: startOfDay(new Date()),
+    endDate: addDays(startOfDay(new Date()), 30),
     status: 'active',
+    points: 200,
+    progress: 0,
+    maxProgress: 3,
+    completed: false,
+    icon: 'Star'
   },
 ]
 

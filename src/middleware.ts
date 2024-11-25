@@ -1,79 +1,52 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import type { Database } from '@/types/supabase'
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/auth/callback']
-
-export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient<Database>({ req, res })
+export async function middleware(request: NextRequest) {
+  // Create Supabase client
+  const supabase = createMiddlewareClient({ req: request, res: NextResponse.next() })
 
   // Refresh session if expired
-  const {
-    data: { session },
-    error
-  } = await supabase.auth.getSession()
+  const { data: { session } } = await supabase.auth.getSession()
 
-  const requestedPath = req.nextUrl.pathname
+  // Protected routes
+  const protectedPaths = [
+    '/dashboard',
+    '/activities',
+    '/achievements',
+    '/profile',
+    '/care-log',
+    '/tapestry',
+    '/settings'
+  ]
 
-  // Allow public routes
-  if (PUBLIC_ROUTES.includes(requestedPath)) {
-    return res
-  }
+  const isProtectedPath = protectedPaths.some(path => 
+    request.nextUrl.pathname.startsWith(path)
+  )
 
-  // Check auth state
-  if (!session) {
-    // Redirect to login if accessing protected route while not authenticated
-    const redirectUrl = new URL('/login', req.url)
-    redirectUrl.searchParams.set('callbackUrl', requestedPath)
+  // If accessing protected route without session, redirect to login
+  if (isProtectedPath && !session) {
+    const redirectUrl = new URL('/login', request.url)
+    redirectUrl.searchParams.set('redirect', request.nextUrl.pathname)
     return NextResponse.redirect(redirectUrl)
   }
 
-  // For authenticated users trying to access login/signup pages
-  if (['/login', '/signup'].includes(requestedPath) && session) {
-    return NextResponse.redirect(new URL('/member', req.url))
+  // Auth routes - redirect to dashboard if already logged in
+  const authPaths = ['/login', '/signup']
+  const isAuthPath = authPaths.some(path => 
+    request.nextUrl.pathname.startsWith(path)
+  )
+
+  if (isAuthPath && session) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
-  // Check if user has a profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', session.user.id)
-    .single()
-
-  // If no profile exists, create one
-  if (!profile && session.user) {
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert([
-        {
-          id: session.user.id,
-          email: session.user.email!,
-          username: session.user.user_metadata.username || session.user.email!.split('@')[0],
-          avatar_url: session.user.user_metadata.avatar_url
-        }
-      ])
-
-    if (profileError) {
-      console.error('Error creating profile:', profileError)
-      // Consider how to handle this error - maybe redirect to an error page?
-    }
-  }
-
-  return res
+  // Return response with refreshed auth cookie
+  return NextResponse.next()
 }
 
-// Specify which routes should be processed by the middleware
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$|.*\\.svg$).*)',
   ],
 }

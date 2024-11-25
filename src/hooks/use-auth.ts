@@ -9,9 +9,9 @@ type Profile = Database['public']['Tables']['profiles']['Row']
 type UserStats = Awaited<ReturnType<typeof getUserStats>>['stats']
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [stats, setStats] = useState<UserStats | null>(null)
+  const [user, setUser] = useState<User | null>()
+  const [profile, setProfile] = useState<Profile | null>()
+  const [stats, setStats] = useState<UserStats | null>()
   const [loading, setLoading] = useState(true)
   const router = useRouter()
   const supabase = createClientComponentClient<Database>()

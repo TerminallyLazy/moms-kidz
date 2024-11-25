@@ -1,114 +1,203 @@
 "use client"
-
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/use-auth'
-import type { User } from '@supabase/auth-helpers-nextjs'
-import type { Database } from '@/types/supabase'
-
-type Profile = Database['public']['Tables']['profiles']['Row']
-type UserStats = {
-  totalPoints: number
-  level: number
-  xpToNextLevel: number
-  achievements: any[]
-  streaks: any[]
-  activityCount: number
-}
+import auth, { type Profile } from '@/lib/auth'
+import { type Session, type User } from '@supabase/supabase-js'
+import { logger } from '@/lib/logger'
 
 interface AuthContextType {
   user: User | null
   profile: Profile | null
-  stats: UserStats | null
-  loading: boolean
+  session: Session | null
+  isLoading: boolean
+  signIn: (email: string, password: string) => Promise<void>
+  signUp: (email: string, password: string, username: string) => Promise<void>
   signOut: () => Promise<void>
-  updateProfile: (updates: Partial<Profile>) => Promise<{ success: boolean; data?: Profile; error?: any }>
-  refreshUserData: () => Promise<void>
+  signInWithProvider: (provider: 'google' | 'github') => Promise<void>
+  updateProfile: (updates: Partial<Profile>) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const auth = useAuth()
+  const [user, setUser] = useState<User | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
-  // Subscribe to auth state changes
+  // Initialize auth state
   useEffect(() => {
-    if (!auth.loading) {
-      // If not logged in and not on a public page, redirect to login
-      if (!auth.user && !window.location.pathname.match(/^\/($|login|signup|auth\/callback)/)) {
-        router.push('/login')
-      }
-      // If logged in and on a public page, redirect to member dashboard
-      else if (auth.user && window.location.pathname.match(/^\/($|login|signup)/)) {
-        router.push('/member')
+    const initializeAuth = async () => {
+      try {
+        logger.info('Initializing auth state')
+        setIsLoading(true)
+        const session = await auth.getSession()
+        logger.info('Got session', { hasSession: !!session })
+        setSession(session)
+        
+        if (session?.user) {
+          logger.info('Session has user, fetching profile', { userId: session.user.id })
+          setUser(session.user)
+          const profile = await auth.getProfile(session.user.id)
+          logger.info('Got profile', { hasProfile: !!profile })
+          setProfile(profile)
+        } else {
+          logger.info('No user in session')
+        }
+      } catch (error) {
+        logger.error('Error initializing auth:', error as Error)
+      } finally {
+        setIsLoading(false)
       }
     }
-  }, [auth.user, auth.loading, router])
+
+    initializeAuth()
+
+    // Subscribe to auth changes
+    const unsubscribe = auth.onAuthStateChange(async (session: Session | null) => {
+      logger.info('Auth state changed', { hasSession: !!session })
+      setSession(session)
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        try {
+          logger.info('Fetching profile after auth change', { userId: session.user.id })
+          const profile = await auth.getProfile(session.user.id)
+          logger.info('Got profile after auth change', { hasProfile: !!profile })
+          setProfile(profile)
+        } catch (error) {
+          logger.error('Error fetching profile:', error as Error)
+        }
+      } else {
+        setProfile(null)
+      }
+    })
+
+    return () => {
+      logger.info('Cleaning up auth subscriptions')
+      unsubscribe()
+    }
+  }, [])
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      setIsLoading(true)
+      logger.info('Attempting sign in', { email })
+      const { session } = await auth.signIn(email, password)
+      if (session?.user) {
+        logger.info('Sign in successful, fetching profile', { userId: session.user.id })
+        const profile = await auth.getProfile(session.user.id)
+        setProfile(profile)
+        router.push('/dashboard')
+      }
+    } catch (error) {
+      logger.error('Sign in error:', error as Error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const signUp = async (email: string, password: string, username: string) => {
+    try {
+      setIsLoading(true)
+      logger.info('Attempting sign up', { email, username })
+      await auth.signUp(email, password, username)
+      // After signup, sign in automatically
+      await signIn(email, password)
+    } catch (error) {
+      logger.error('Sign up error:', error as Error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const signOut = async () => {
+    try {
+      setIsLoading(true)
+      logger.info('Attempting sign out')
+      await auth.signOut()
+      setUser(null)
+      setProfile(null)
+      setSession(null)
+      router.push('/')
+    } catch (error) {
+      logger.error('Sign out error:', error as Error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const signInWithProvider = async (provider: 'google' | 'github') => {
+    try {
+      setIsLoading(true)
+      logger.info('Attempting provider sign in', { provider })
+      await auth.signInWithProvider(provider)
+    } catch (error) {
+      logger.error('Provider sign in error:', error as Error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const updateProfile = async (updates: Partial<Profile>) => {
+    if (!user) {
+      logger.error('Update profile attempted without user')
+      throw new Error('No user logged in')
+    }
+    try {
+      setIsLoading(true)
+      logger.info('Attempting profile update', { userId: user.id, updates })
+      const updatedProfile = await auth.updateProfile(user.id, updates)
+      setProfile(updatedProfile)
+    } catch (error) {
+      logger.error('Profile update error:', error as Error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const value = {
+    user,
+    profile,
+    session,
+    isLoading,
+    signIn,
+    signUp,
+    signOut,
+    signInWithProvider,
+    updateProfile,
+  }
 
   return (
-    <AuthContext.Provider value={auth}>
-      {auth.loading ? (
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600 dark:border-purple-400"></div>
-        </div>
-      ) : (
-        children
-      )}
+    <AuthContext.Provider value={value}>
+      {children}
     </AuthContext.Provider>
   )
 }
 
-export function useAuthContext() {
+export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error('useAuthContext must be used within an AuthProvider')
+    throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
 }
 
-// Custom hook for protected pages
-export function useProtectedRoute() {
-  const { user, loading } = useAuthContext()
+// Hook for protected routes
+export function useRequireAuth() {
+  const { user, isLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!isLoading && !user) {
       router.push('/login')
     }
-  }, [user, loading, router])
+  }, [user, isLoading, router])
 
-  return { user, loading }
-}
-
-// Custom hook for public pages (login, signup)
-export function usePublicRoute() {
-  const { user, loading } = useAuthContext()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!loading && user) {
-      router.push('/member')
-    }
-  }, [user, loading, router])
-
-  return { user, loading }
-}
-
-// Custom hook for admin routes
-export function useAdminRoute() {
-  const { user, profile, loading } = useAuthContext()
-  const router = useRouter()
-
-  useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        router.push('/login')
-      } else if (!profile?.metadata?.isAdmin) {
-        router.push('/member')
-      }
-    }
-  }, [user, profile, loading, router])
-
-  return { user, profile, loading }
+  return { user, isLoading }
 }

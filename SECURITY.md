@@ -2,127 +2,86 @@
 
 ## Supported Versions
 
-We release patches for security vulnerabilities. Currently supported versions are:
+We release patches for security vulnerabilities. Currently supported versions:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 3.0.x   | :white_check_mark: |
-| 2.0.x   | :x:                |
-| 1.0.x   | :x:                |
+| 3.x.x   | :white_check_mark: |
+| < 3.0   | :x:                |
 
 ## Reporting a Vulnerability
 
-We take the security of Mom's Kidz and our users' data very seriously. If you believe you have found a security vulnerability, please report it to us as described below.
+We take the security of Mom's Kidz seriously. If you believe you have found a security vulnerability, please report it to us as described below.
 
-### Please do the following:
+### Where to Report
 
-- **Do not** report security vulnerabilities through public GitHub issues
-- Email security@momskidz.com with a detailed description of the issue
-- Include steps to reproduce the vulnerability
-- Include the affected version(s)
-- Include any potential impacts of the vulnerability
+Please **DO NOT** report security vulnerabilities through public GitHub issues.
 
-### You can expect:
+Instead, please report them via email to [security@example.com](mailto:security@example.com). You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
 
-- A response within 48 hours acknowledging receipt of your report
-- Regular updates about our progress
-- Credit for responsibly disclosing the issue (if desired)
+### What to Include
 
-## Security Measures
+Please include the following information in your report:
 
-### Data Protection
+- Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
+- Full paths of source file(s) related to the manifestation of the issue
+- The location of the affected source code (tag/branch/commit or direct URL)
+- Any special configuration required to reproduce the issue
+- Step-by-step instructions to reproduce the issue
+- Proof-of-concept or exploit code (if possible)
+- Impact of the issue, including how an attacker might exploit it
 
-- All data is encrypted at rest and in transit
-- HIPAA compliance for all medical and personal data
-- Regular security audits and penetration testing
-- Strict access control and authentication measures
+### What to Expect
 
-### Code Security
+- We will acknowledge your email within 48 hours
+- We will send a more detailed response within 72 hours indicating the next steps in handling your report
+- We will keep you informed of the progress towards a fix and full announcement
+- We will notify you when the reported vulnerability is fixed
 
-- Automated security scanning in CI/CD pipeline
-- Regular dependency updates and vulnerability scanning
-- Code review requirements for all changes
-- Secure development lifecycle practices
+### Protected Data
 
-## Best Practices
+Mom's Kidz is committed to protecting user data. We:
 
-### For Contributors
+- Encrypt all data in transit using TLS
+- Store sensitive data using industry-standard encryption
+- Regularly audit our security practices
+- Maintain HIPAA compliance for medical data
+- Follow data protection regulations including GDPR and CCPA
 
-1. Never commit sensitive information:
-   - API keys
-   - Passwords
-   - Personal data
-   - Private keys
-   - Environment variables
+### Security Measures
 
-2. Follow secure coding guidelines:
-   - Input validation
-   - Output encoding
-   - Authentication checks
-   - Authorization controls
-   - Safe data handling
+- All code changes are reviewed for security implications
+- Regular security audits are performed
+- Dependencies are automatically monitored for vulnerabilities
+- Access to production systems is strictly controlled
+- Regular backups are performed and tested
+- Security incidents are logged and monitored
 
-3. Dependencies:
-   - Keep dependencies updated
-   - Use only trusted packages
-   - Regular security audits
-   - Lock file maintenance
+## Security Best Practices
 
-### For Users
+When contributing to Mom's Kidz, please ensure you follow these security best practices:
 
-1. Account Security:
-   - Use strong passwords
-   - Enable 2FA when available
-   - Keep credentials secure
-   - Report suspicious activity
+1. Never commit sensitive information (tokens, passwords, keys) to the repository
+2. Use environment variables for configuration
+3. Validate all user input
+4. Use parameterized queries for database operations
+5. Follow the principle of least privilege
+6. Keep dependencies updated
+7. Use strong password hashing (Argon2, bcrypt)
+8. Implement proper session management
+9. Use Content Security Policy (CSP) headers
+10. Enable CORS appropriately
 
-2. Data Handling:
-   - Follow HIPAA guidelines
-   - Minimize sensitive data exposure
-   - Use secure communication channels
-   - Regular security training
+## Disclosure Policy
 
-## Incident Response
+When we receive a security bug report, we will:
 
-In case of a security incident:
+1. Confirm the problem and determine the affected versions
+2. Audit code to find any potential similar problems
+3. Prepare fixes for all supported versions
+4. Release new versions and patches
+5. Announce the problem and fixes
 
-1. The security team will be notified immediately
-2. The vulnerability will be confirmed and assessed
-3. A fix will be developed and tested
-4. A security advisory will be published
-5. Users will be notified if necessary
+## Comments on this Policy
 
-## Compliance
-
-We maintain compliance with:
-
-- HIPAA
-- GDPR (where applicable)
-- CCPA (where applicable)
-- Industry security standards
-
-## Security Updates
-
-Security updates will be released as soon as possible after a vulnerability is confirmed. Users will be notified through:
-
-- Security advisories
-- Email notifications
-- In-app notifications
-- Release notes
-
-## Contact
-
-For security-related inquiries:
-- Email: security@momskidz.com
-- PGP Key: [Link to PGP key]
-- Security Team: [Team members]
-
-## Acknowledgments
-
-We would like to thank the following individuals and organizations for their contributions to our security:
-
-- Security researchers
-- Open source community
-- Our dedicated security team
-
-This security policy is subject to change without notice. Please check back regularly for updates.
+If you have suggestions on how this process could be improved, please submit a pull request or open an issue to discuss.

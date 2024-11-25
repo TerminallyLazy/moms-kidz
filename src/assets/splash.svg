@@ -1,0 +1,42 @@
+<svg width="2732" height="2732" viewBox="0 0 2732 2732" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="2732" height="2732" fill="#FFFFFF"/>
+  
+  <!-- Gradient Background -->
+  <rect width="2732" height="2732" fill="url(#gradient)"/>
+  
+  <!-- Logo Container -->
+  <g transform="translate(1066, 1066)">
+    <!-- Background Circle -->
+    <circle cx="300" cy="300" r="300" fill="#9333EA"/>
+    
+    <!-- Heart Shape -->
+    <path d="M436 225C436 276.214 394.214 318 343 318C291.786 318 250 276.214 250 225C250 173.786 291.786 132 343 132C394.214 132 436 173.786 436 225Z" fill="white"/>
+    <path d="M350 318C350 369.214 308.214 411 257 411C205.786 411 164 369.214 164 318C164 266.786 205.786 225 257 225C308.214 225 350 266.786 350 318Z" fill="white"/>
+    
+    <!-- Combined Heart -->
+    <path d="M300 468C300 468 412 375 412 263C412 211.786 370.214 170 319 170C301.005 170 284.324 175.247 270 184.295C255.676 175.247 238.995 170 221 170C169.786 170 128 211.786 128 263C128 375 240 468 240 468H300Z" fill="white"/>
+    
+    <!-- Child Silhouette -->
+    <path d="M300 337C315.464 337 328 324.464 328 309C328 293.536 315.464 281 300 281C284.536 281 272 293.536 272 309C272 324.464 284.536 337 300 337Z" fill="#9333EA"/>
+    <path d="M300 328C310.493 328 319 319.493 319 309C319 298.507 310.493 290 300 290C289.507 290 281 298.507 281 309C281 319.493 289.507 328 300 328Z" fill="white"/>
+  </g>
+  
+  <!-- App Name -->
+  <text x="1366" y="1766" text-anchor="middle" font-family="Inter" font-size="120" font-weight="700" fill="#1F2937">
+    Mom's Kidz
+  </text>
+  
+  <!-- Loading Text -->
+  <text x="1366" y="1866" text-anchor="middle" font-family="Inter" font-size="48" fill="#6B7280">
+    Loading...
+  </text>
+  
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0" y1="0" x2="2732" y2="2732" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" style="stop-color:#F3F4F6"/>
+      <stop offset="100%" style="stop-color:#FFFFFF"/>
+    </linearGradient>
+  </defs>
+</svg>

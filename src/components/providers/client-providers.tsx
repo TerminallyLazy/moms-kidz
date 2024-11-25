@@ -1,41 +1,24 @@
 "use client"
 
-import { Toaster } from 'sonner'
+import { ThemeProvider } from "@/components/providers/theme-provider"
 import { AuthProvider } from "@/contexts/auth-context"
-import { GamificationProvider } from "@/contexts/gamification-context"
-import { InteractionProvider } from "@/components/analytics/interaction-tracker"
-import { ThemeProvider } from "./theme-provider"
-import { ShortcutsProvider } from "./shortcuts-provider"
-import { CommandMenu } from "@/components/command-menu"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { Toaster } from "sonner"
 
-interface ClientProvidersProps {
-  children: React.ReactNode
-}
-
-export function ClientProviders({ children }: ClientProvidersProps) {
+export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <AuthProvider>
-        <GamificationProvider>
-          <InteractionProvider>
-            <ShortcutsProvider>
-              <CommandMenu />
-              {children}
-              <Toaster 
-                position="top-right"
-                richColors
-                closeButton
-                theme="system"
-              />
-            </ShortcutsProvider>
-          </InteractionProvider>
-        </GamificationProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <AuthProvider>
+          {children}
+          <Toaster />
+        </AuthProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   )
 }

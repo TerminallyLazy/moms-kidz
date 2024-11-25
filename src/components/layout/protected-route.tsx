@@ -2,8 +2,8 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuthContext } from "@/contexts/auth-context"
-import { LoadingPage } from "@/components/ui/loading"
+import { useAuth } from "@/contexts/auth-context"
+import { Icons } from "@/components/ui/icons"
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -11,73 +11,40 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { user, profile, loading } = useAuthContext()
   const router = useRouter()
+  const { user, profile, isLoading } = useAuth()
 
   useEffect(() => {
-    if (!loading) {
-      if (!user) {
-        // Not authenticated, redirect to login
-        router.push(`/login?callbackUrl=${window.location.pathname}`)
-      } else if (requireAdmin && !profile?.metadata?.isAdmin) {
-        // Not an admin, redirect to member dashboard
-        router.push('/member')
-      }
+    if (!isLoading && !user) {
+      const currentPath = window.location.pathname
+      router.push(`/login?redirect=${encodeURIComponent(currentPath)}`)
     }
-  }, [user, profile, loading, router, requireAdmin])
+  }, [user, isLoading, router])
 
-  // Show loading state while checking authentication
-  if (loading) {
-    return <LoadingPage />
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Icons.spinner className="h-8 w-8 animate-spin" />
+      </div>
+    )
   }
 
-  // Show nothing while redirecting
-  if (!user || (requireAdmin && !profile?.metadata?.isAdmin)) {
+  if (!user || !profile) {
     return null
   }
 
-  // Render children if authenticated and authorized
   return <>{children}</>
 }
 
 // Higher-order component version
 export function withProtectedRoute<P extends object>(
-  Component: React.ComponentType<P>,
-  requireAdmin = false
+  Component: React.ComponentType<P>
 ) {
   return function ProtectedComponent(props: P) {
     return (
-      <ProtectedRoute requireAdmin={requireAdmin}>
+      <ProtectedRoute>
         <Component {...props} />
       </ProtectedRoute>
     )
   }
 }
-
-// Admin route wrapper
-export function AdminRoute({ children }: { children: React.ReactNode }) {
-  return <ProtectedRoute requireAdmin>{children}</ProtectedRoute>
-}
-
-// Example usage:
-// 1. Wrap a component directly:
-// export default function MemberPage() {
-//   return (
-//     <ProtectedRoute>
-//       <YourComponent />
-//     </ProtectedRoute>
-//   )
-// }
-
-// 2. Use HOC:
-// const ProtectedMemberPage = withProtectedRoute(MemberPage)
-// export default ProtectedMemberPage
-
-// 3. Admin route:
-// export default function AdminPage() {
-//   return (
-//     <AdminRoute>
-//       <YourAdminComponent />
-//     </AdminRoute>
-//   )
-// }

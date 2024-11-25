@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { FcGoogle } from "react-icons/fc"
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { useAuth } from "@/contexts/auth-context"
 import { toast } from "sonner"
+import { logger } from "@/lib/logger"
 
 export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -21,37 +22,16 @@ export default function SignUpPage() {
     password: "",
   })
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const { signUp, signInWithProvider } = useAuth()
 
   const handleGoogleSignUp = async () => {
     try {
       setIsLoading(true)
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        }
-      })
-
-      if (error) {
-        toast.error("Failed to sign up with Google")
-        console.error("Error:", error)
-        return
-      }
-
-      if (!data.url) {
-        toast.error("No redirect URL received")
-        return
-      }
-
-      window.location.href = data.url
+      logger.info('Attempting Google sign up')
+      await signInWithProvider('google')
     } catch (error) {
-      toast.error("An unexpected error occurred")
-      console.error("Error:", error)
+      logger.error('Google sign up error:', error as Error)
+      toast.error("Failed to sign up with Google")
     } finally {
       setIsLoading(false)
     }
@@ -61,69 +41,16 @@ export default function SignUpPage() {
     e.preventDefault()
     try {
       setIsLoading(true)
-
-      // First check if username is unique
-      const { data: existingUser, error: checkError } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', formData.username)
-        .single()
-
-      if (existingUser) {
-        toast.error("Username is already taken")
-        setIsLoading(false)
-        return
-      }
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        toast.error("Error checking username availability")
-        setIsLoading(false)
-        return
-      }
-
-      // Sign up with email/password
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            username: formData.username,
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`
-        }
-      })
-
-      if (error) {
-        toast.error(error.message)
-        return
-      }
-
-      if (!data?.user) {
-        toast.error("No user data received")
-        return
-      }
-
-      // Create profile entry
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([
-          {
-            id: data.user.id,
-            username: formData.username,
-            email: formData.email,
-          }
-        ])
-
-      if (profileError) {
-        toast.error("Failed to create profile")
-        return
-      }
-
+      logger.info('Attempting email sign up', { email: formData.email, username: formData.username })
+      
+      await signUp(formData.email, formData.password, formData.username)
+      
+      logger.info('Sign up successful')
       toast.success("Sign up successful! Please check your email to verify your account.")
       router.push('/login')
     } catch (error) {
-      toast.error("An unexpected error occurred")
-      console.error("Error:", error)
+      logger.error('Email sign up error:', error as Error)
+      toast.error("Failed to create account. Please try again.")
     } finally {
       setIsLoading(false)
     }

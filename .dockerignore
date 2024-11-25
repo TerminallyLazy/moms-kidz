@@ -3,94 +3,88 @@ node_modules
 npm-debug.log
 yarn-debug.log
 yarn-error.log
-
-# Next.js
-.next
-out
+.pnp
+.pnp.js
 
 # Testing
 coverage
 .nyc_output
 
-# Environment
+# Next.js
+.next
+out
+build
+dist
+
+# Environment files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
 
-# IDE
+# Version control
+.git
+.gitignore
+.gitattributes
+.github
+
+# IDE and editor files
 .idea
 .vscode
 *.swp
 *.swo
+*~
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
-# Git
-.git
-.gitignore
-
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Build
-build
-dist
-
-# Misc
-*.pem
-*.log
-*.pid
-*.seed
-*.pid.lock
-
-# Cache
-.npm
-.eslintcache
-.stylelintcache
-
-# Supabase
-.supabase
-
-# Tests
-__tests__
-test
-tests
-*.test.ts
-*.test.tsx
-*.spec.ts
-*.spec.tsx
-
 # Documentation
-docs
-*.md
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
 LICENSE
+docs
 
 # Development configs
 *.config.js
 *.config.ts
-tsconfig.json
-.prettierrc
-.eslintrc
+.eslintrc*
+.prettierrc*
 .editorconfig
+tsconfig.json
+jest.config.*
 
-# CI/CD
-.github
-.gitlab-ci.yml
-.travis.yml
-.circleci
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Cache directories
+.cache
+.npm
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc
+*.log
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
 
 # Temporary files
 *.tmp
 *.temp
-.cache
+.temp

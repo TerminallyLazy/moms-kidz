@@ -56,6 +56,7 @@ const initialChallenges = [
 
 const initialAchievements = [
   {
+    user_id: 'system',
     type: 'engagement',
     name: 'First Steps',
     description: 'Log your first activity',
@@ -69,6 +70,7 @@ const initialAchievements = [
     }
   },
   {
+    user_id: 'system',
     type: 'streak',
     name: 'Consistency Champion',
     description: 'Maintain a 7-day activity streak',
@@ -82,6 +84,7 @@ const initialAchievements = [
     }
   },
   {
+    user_id: 'system',
     type: 'contribution',
     name: 'Data Pioneer',
     description: 'Contribute to your first research study',
@@ -144,10 +147,12 @@ export async function resetDatabase() {
       'activities',
       'streaks',
       'profiles'
-    ]
+    ] as const
 
     for (const table of tables) {
-      const { error } = await supabase.from(table).delete()
+      const { error } = await supabase
+        .from(table as "profiles" | "activities" | "achievements" | "points" | "challenges" | "user_challenges" | "streaks")
+        .delete()
       if (error) throw new Error(`Error deleting ${table}: ${error.message}`)
       console.log(`Cleared ${table} table`)
     }

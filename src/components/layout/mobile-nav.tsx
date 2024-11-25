@@ -1,140 +1,75 @@
 "use client"
 
-import * as React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Menu, X } from "lucide-react"
-import { useAuthContext } from "@/contexts/auth-context"
+import { Icons } from "@/components/ui/icons"
 import { cn } from "@/lib/utils"
 
-const routes = {
-  public: [
-    {
-      title: "About",
-      href: "/about",
-    },
-  ],
-  authenticated: [
-    {
-      title: "Dashboard",
-      href: "/member",
-    },
-    {
-      title: "Care Log",
-      href: "/care-log",
-    },
-    {
-      title: "Activities",
-      href: "/activities",
-    },
-    {
-      title: "Achievements",
-      href: "/achievements",
-    },
-    {
-      title: "Tapestry",
-      href: "/tapestry",
-    },
-    {
-      title: "Profile",
-      href: "/profile",
-    },
-  ],
+const navItems = [
+  {
+    title: "Home",
+    href: "/dashboard",
+    icon: Icons.home,
+  },
+  {
+    title: "Activities",
+    href: "/activities",
+    icon: Icons.calendar,
+  },
+  {
+    title: "Care",
+    href: "/care-log",
+    icon: Icons.book,
+  },
+  {
+    title: "Social",
+    href: "/tapestry",
+    icon: Icons.users,
+  },
+]
+
+interface MobileNavProps {
+  className?: string
 }
 
-export function MobileNav() {
-  const [open, setOpen] = React.useState(false)
+export function MobileNav({ className }: MobileNavProps) {
   const pathname = usePathname()
-  const { user, signOut } = useAuthContext()
-
-  const handleSignOut = async () => {
-    await signOut()
-    setOpen(false)
-  }
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden">
-          <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle menu</span>
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-        <SheetHeader>
-          <SheetTitle className="text-left text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 text-transparent bg-clip-text">
-            Moms Kidz
-          </SheetTitle>
-        </SheetHeader>
-        <ScrollArea className="my-4 h-[calc(100vh-8rem)] pb-10">
-          <div className="flex flex-col space-y-4">
-            {user ? (
-              <>
-                {routes.authenticated.map((route) => (
-                  <Link
-                    key={route.href}
-                    href={route.href}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                      pathname === route.href && "bg-accent"
-                    )}
-                  >
-                    <div className="text-sm font-medium leading-none">
-                      {route.title}
-                    </div>
-                  </Link>
-                ))}
-                <Button
-                  onClick={handleSignOut}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white"
-                >
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <>
-                {routes.public.map((route) => (
-                  <Link
-                    key={route.href}
-                    href={route.href}
-                    onClick={() => setOpen(false)}
-                    className={cn(
-                      "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                      pathname === route.href && "bg-accent"
-                    )}
-                  >
-                    <div className="text-sm font-medium leading-none">
-                      {route.title}
-                    </div>
-                  </Link>
-                ))}
-                <div className="flex flex-col space-y-2">
-                  <Link href="/login" onClick={() => setOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link href="/signup" onClick={() => setOpen(false)}>
-                    <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-                      Join Now
-                    </Button>
-                  </Link>
-                </div>
-              </>
-            )}
-          </div>
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+    <>
+      {/* Mobile Navigation Bar - Fixed at bottom */}
+      <div className={cn(
+        "fixed bottom-0 left-0 right-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
+        className
+      )}>
+        <nav className="container flex h-16 items-center justify-around">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex flex-col items-center justify-center space-y-1 w-16 h-16 transition-colors",
+                  isActive 
+                    ? "text-primary" 
+                    : "text-muted-foreground hover:text-primary"
+                )}
+              >
+                <Icon className={cn(
+                  "h-5 w-5",
+                  isActive && "animate-bounce"
+                )} />
+                <span className="text-xs font-medium">{item.title}</span>
+              </Link>
+            )
+          })}
+        </nav>
+      </div>
+
+      {/* Add padding at the bottom for mobile navigation */}
+      <div className={cn("h-16", className)} />
+    </>
   )
 }

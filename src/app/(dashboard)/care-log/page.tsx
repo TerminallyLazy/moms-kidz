@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
@@ -16,7 +16,7 @@ import { Camera, Clock, Heart, Plus, Smile, Star } from "lucide-react"
 import { motion } from "framer-motion"
 import { ProtectedRoute } from "@/components/layout/protected-route"
 import { Streaks } from "@/components/dashboard/streaks"
-import { useAuthContext } from "@/contexts/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import { useActivities } from "@/hooks/use-activities"
 import { LoadingSpinner } from "@/components/ui/loading"
 import { toast } from "sonner"
@@ -45,11 +45,11 @@ function CareLogDashboard() {
   const [notes, setNotes] = useState('')
   const [hasPhoto, setHasPhoto] = useState(false)
   
-  const { stats } = useAuthContext()
+  const { stats } = useAuth()
   const { isLoading, logActivity, activities, fetchActivities } = useActivities()
 
   // Fetch activities on mount
-  useState(() => {
+  useEffect(() => {
     fetchActivities()
   }, [])
 
@@ -58,18 +58,13 @@ function CareLogDashboard() {
 
     try {
       const { success, error } = await logActivity({
-        type: selectedActivity,
-        title: `${selectedActivity} Activity`,
-        description: notes,
+        type: selectedActivity as 'sleep' | 'play' | 'health' | 'feed',
         date: selectedDate.toISOString(),
         details: {
+          title: `${selectedActivity} Activity`,
           mood,
           hasPhoto,
-          notesLength: notes.length
-        },
-        metadata: {
-          mood,
-          hasPhoto,
+          notesLength: notes.length,
           detailedNotes: notes.length >= 50
         }
       })
@@ -266,6 +261,7 @@ function CareLogDashboard() {
                     />
                   </CardContent>
                 </Card>
+              )}
             </div>
 
             {/* Challenges and Streaks Section */}
@@ -287,3 +283,4 @@ export default function CareLogPage() {
     </ProtectedRoute>
   )
 }
+

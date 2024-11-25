@@ -1,0 +1,53 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'nextjs'
+    static_configs:
+      - targets: ['app:3000']
+    metrics_path: '/api/metrics'
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  - job_name: 'node'
+    static_configs:
+      - targets: ['app:3000']
+    metrics_path: '/metrics'
+
+  # System monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Container metrics
+  - job_name: 'docker'
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 15s
+    relabel_configs:
+      - source_labels: [__meta_docker_container_name]
+        regex: '/(.*)'
+        target_label: container_name
+        replacement: '$1'
+
+# Alerting rules
+rule_files:
+  - "alert.rules"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # AlertManager configuration would go here
+          # - 'alertmanager:9093'
+
+# Remote write configuration for long-term storage (optional)
+# remote_write:
+#   - url: "http://remote-storage:9201/write"
+
+# Remote read configuration for querying long-term storage (optional)
+# remote_read:
+#   - url: "http://remote-storage:9201/read"

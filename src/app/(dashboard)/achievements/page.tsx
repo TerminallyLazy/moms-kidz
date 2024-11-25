@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Award, Calendar, Heart, Star, Trophy, Users } from "lucide-react"
 import { motion } from "framer-motion"
 import { ProtectedRoute } from "@/components/layout/protected-route"
-import { useAuthContext } from "@/contexts/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import { useDb } from "@/lib/db/client"
 
 const CATEGORIES = [
@@ -75,8 +75,8 @@ function AchievementCard({ achievement, unlocked = false }: {
 
 function AchievementsDashboard() {
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const { stats } = useAuthContext()
-  const achievements = stats?.achievements || []
+  const { stats: userStats } = useAuth()
+  const achievements = userStats?.achievements || []
   
   const filteredAchievements = achievements.filter(
     achievement => selectedCategory === 'all' || achievement.type === selectedCategory
@@ -84,8 +84,8 @@ function AchievementsDashboard() {
 
   const stats = {
     totalAchievements: achievements.length,
-    unlockedAchievements: achievements.filter(a => a.unlocked).length,
-    totalPoints: achievements.reduce((sum, a) => a.unlocked ? sum + a.points : sum, 0)
+    unlockedAchievements: achievements.filter(a => a.unlocked_at !== null).length,
+    totalPoints: achievements.reduce((sum, a) => a.unlocked_at ? sum + a.points : sum, 0)
   }
 
   return (
@@ -166,7 +166,7 @@ function AchievementsDashboard() {
                   <AchievementCard
                     key={achievement.id}
                     achievement={achievement}
-                    unlocked={achievement.unlocked}
+                    unlocked={!!achievement.unlocked_at}
                   />
                 ))}
               </div>

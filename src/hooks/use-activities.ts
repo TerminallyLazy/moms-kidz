@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from 'react'
-import { useAuthContext } from '@/contexts/auth-context'
+import { useAuth } from '@/contexts/auth-context'
 import { useDb } from '@/lib/db/client'
 import type { Database } from '@/types/supabase'
 
@@ -9,7 +9,7 @@ type Activity = Database['public']['Tables']['activities']['Row']
 type ActivityInsert = Database['public']['Tables']['activities']['Insert']
 
 export function useActivities() {
-  const { user } = useAuthContext()
+  const { user } = useAuth()
   const db = useDb()
   const [isLoading, setIsLoading] = useState(false)
   const [activities, setActivities] = useState<Activity[]>([])

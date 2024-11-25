@@ -1,92 +1,84 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to Mom's Kidz will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.0.0] - 2024-01-24
+## [Unreleased]
 
 ### Added
-- Complete rebuild using Next.js 13+ App Router
-- New gamification system for data collection
-- Advanced pediatric data acquisition features
-- HIPAA-compliant data handling
-- Social media integration
-- Real-time progress tracking
-- Community features
-- Google OAuth integration
+- Initial project setup with Next.js 13+ and App Router
+- Supabase integration for authentication and database
+- User authentication system with email and OAuth providers
+- Dashboard layout with responsive design
+- Profile and settings management
 - Dark mode support
-- Global search with keyboard shortcuts
-- Mobile-responsive design
-- Rich data visualization
-- Achievement system
-- Activity logging system
-- User profiles with avatars
-- Community challenges
+- Mobile-friendly navigation
+- Database migration and seeding system
 
 ### Changed
-- Migrated from REST API to tRPC
-- Upgraded to TypeScript
-- Switched to Supabase from Firebase
-- Improved authentication flow
-- Enhanced data validation
-- Better error handling
-- Upgraded UI components to shadcn/ui
+- Upgraded to Next.js 13 App Router from Pages Router
+- Switched from PostgreSQL direct connection to Supabase
 
 ### Security
-- Implemented HIPAA compliance measures
-- Enhanced data encryption
-- Added two-factor authentication
-- Improved access control
-- Regular security audits
-- Automated vulnerability scanning
+- Implemented Row Level Security (RLS) in Supabase
+- Added authentication middleware
+- Secure session management
+- Protected API routes
 
-### Fixed
-- Cross-browser compatibility issues
-- Mobile navigation bugs
-- Data synchronization issues
-- Authentication edge cases
-- Performance bottlenecks
-
-## [2.0.0] - 2023-06-15
+## [3.0.0] - 2024-03-24
 
 ### Added
-- Initial Next.js implementation
-- Basic user authentication
-- Simple data collection
+- Complete rewrite using Next.js 13+
+- New UI components using shadcn/ui
+- Framer Motion animations
+- Real-time updates with Supabase
+- Improved mobile responsiveness
+- Enhanced security features
+- Better type safety with TypeScript
+- New dashboard design
+- Activity tracking system
+- Achievement system
 - Profile management
-- Activity tracking
+- Settings management
 
 ### Changed
-- Upgraded from Create React App
-- Improved routing system
-- Enhanced user interface
-- Better data management
-
-### Deprecated
-- Legacy API endpoints
-- Old authentication system
+- Migrated from REST API to Supabase
+- Updated authentication system
+- Improved state management with Zustand
+- Enhanced form handling with React Hook Form and Zod
+- Better error handling and loading states
+- Upgraded all dependencies to latest versions
 
 ### Removed
-- PHP backend
-- jQuery dependencies
-- Legacy components
+- Legacy API endpoints
+- Old authentication system
+- Deprecated components
+- Unused dependencies
+
+### Security
+- Added comprehensive security policies
+- Implemented better password hashing
+- Enhanced data encryption
+- Improved session management
+- Added rate limiting
+- Enhanced input validation
 
 ### Fixed
-- Authentication bugs
-- Data persistence issues
-- UI inconsistencies
+- Various UI/UX issues
+- Performance bottlenecks
+- Authentication edge cases
+- Mobile navigation issues
+- Form validation problems
+- Data synchronization issues
 
-## [1.0.0] - 2023-01-01
+## [2.0.0] - [DEPRECATED]
 
-### Added
-- Initial release
-- Basic functionality
-- User registration
-- Simple data entry
-- Basic reporting
+Previous version changelog entries removed as v2 is no longer supported.
 
-[3.0.0]: https://github.com/yourusername/moms-kidz-v3/compare/v2.0.0...v3.0.0
-[2.0.0]: https://github.com/yourusername/moms-kidz-v3/compare/v1.0.0...v2.0.0
-[1.0.0]: https://github.com/yourusername/moms-kidz-v3/releases/tag/v1.0.0
+## [1.0.0] - [DEPRECATED]
+
+Previous version changelog entries removed as v1 is no longer supported.
+
+Note: This changelog starts from version 3.0.0 as previous versions are deprecated and no longer maintained.

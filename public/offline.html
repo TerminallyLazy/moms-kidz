@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Mom's Kidz</title>
+    <style>
+        :root {
+            --primary: #9333ea;
+            --primary-light: #a855f7;
+            --background: #ffffff;
+            --text: #1f2937;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background: #111827;
+                --text: #f3f4f6;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .icon {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 2rem;
+            color: var(--primary);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        p {
+            margin-bottom: 2rem;
+            line-height: 1.5;
+            opacity: 0.8;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .button:hover {
+            background-color: var(--primary-light);
+        }
+
+        .offline-features {
+            margin-top: 3rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            text-align: left;
+        }
+
+        .feature {
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+        }
+
+        .feature h3 {
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .feature p {
+            font-size: 0.875rem;
+            margin-bottom: 0;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Offline Icon -->
+        <svg class="icon pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 1L23 23M16.72 11.06C17.54 11.42 18.29 11.93 18.94 12.57C19.59 13.22 20.1 13.97 20.46 14.79M7.28 11.06C6.46 11.42 5.71 11.93 5.06 12.57C4.41 13.22 3.9 13.97 3.54 14.79M13.34 14.78C13.73 15.19 14.03 15.69 14.21 16.23M10.66 14.78C10.27 15.19 9.97 15.69 9.79 16.23M12 18H12.01" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+
+        <h1>You're Offline</h1>
+        <p>
+            Don't worry! Mom's Kidz works offline, and you can still access previously loaded content and create new entries.
+            We'll sync everything when you're back online.
+        </p>
+        
+        <a href="/" class="button">Try Again</a>
+
+        <div class="offline-features">
+            <div class="feature">
+                <h3>Available Offline</h3>
+                <p>Access your recent activities, logs, and achievements even without internet connection.</p>
+            </div>
+            <div class="feature">
+                <h3>Keep Tracking</h3>
+                <p>Continue logging new activities. They'll automatically sync when you're back online.</p>
+            </div>
+            <div class="feature">
+                <h3>Auto Sync</h3>
+                <p>All changes made while offline will be synchronized automatically when connection is restored.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check connection status periodically
+        function checkConnection() {
+            if (navigator.onLine) {
+                window.location.reload()
+            }
+        }
+
+        // Check every 5 seconds
+        setInterval(checkConnection, 5000)
+
+        // Also check when online status changes
+        window.addEventListener('online', checkConnection)
+    </script>
+</body>
+</html>

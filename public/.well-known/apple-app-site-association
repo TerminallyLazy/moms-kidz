@@ -1,0 +1,23 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.com.momskidz.app",
+        "paths": [
+          "/activities/*",
+          "/profile/*",
+          "/tapestry/*",
+          "/share/*",
+          "/NOT/share-target/*"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["TEAM_ID.com.momskidz.app"]
+  },
+  "activitycontinuation": {
+    "apps": ["TEAM_ID.com.momskidz.app"]
+  }
+}

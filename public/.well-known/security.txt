@@ -1,0 +1,19 @@
+# Security Policy for Mom's Kidz
+Contact: mailto:security@momskidz.com
+Expires: 2025-12-31T23:59:59.000Z
+Encryption: https://momskidz.com/pgp-key.txt
+Acknowledgments: https://momskidz.com/security/hall-of-fame
+Policy: https://momskidz.com/security/policy
+Hiring: https://momskidz.com/careers
+Preferred-Languages: en
+Canonical: https://momskidz.com/.well-known/security.txt
+# Our security address
+Contact: https://momskidz.com/security/report
+# Our OpenPGP key
+Encryption: https://momskidz.com/pgp-key.asc
+# Our security acknowledgments page
+Acknowledgments: https://momskidz.com/security/hall-of-fame
+# Our security policy
+Policy: https://momskidz.com/security/policy
+# Digital signature
+Signature: https://momskidz.com/.well-known/security.txt.sig

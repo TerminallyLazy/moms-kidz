@@ -1,0 +1,61 @@
+# www.robotstxt.org/
+
+# Allow crawling of all content
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /profile/*/edit
+Disallow: /settings
+Disallow: /auth/
+Disallow: /*.json
+Disallow: /*.xml
+Disallow: /private/
+Disallow: /share-target/
+Disallow: /*?*
+Disallow: /*?
+Disallow: /api-docs/
+
+# Block GPTBot
+User-agent: GPTBot
+Disallow: /
+
+# Block CCBot
+User-agent: CCBot
+Disallow: /
+
+# Block ChatGPT Plugin
+User-agent: ChatGPT-User
+Disallow: /
+
+# Block Google-Extended
+User-agent: Google-Extended
+Disallow: /
+
+# Block AdsBot
+User-agent: AdsBot-Google
+Allow: /
+
+# Allow Googlebot
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /private/
+
+# Allow Bingbot
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /private/
+
+# Sitemaps
+Sitemap: https://momskidz.com/sitemap.xml
+Sitemap: https://momskidz.com/server-sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 10
+
+# Host
+Host: https://momskidz.com

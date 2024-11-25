@@ -1,113 +1,103 @@
-.PHONY: help setup dev build test lint format clean docker-up docker-down db-setup db-migrate
+.PHONY: help install dev build start clean test lint format db-migrate db-seed db-reset docker-build docker-up docker-down
 
-# Include environment variables from .env
--include .env
-export
+# Variables
+DOCKER_COMPOSE = docker-compose
+DOCKER_COMPOSE_FILE = docker-compose.yml
+DOCKER_COMPOSE_OVERRIDE = docker-compose.override.yml
 
-help: ## Display this help screen
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+# Colors
+CYAN = \033[0;36m
+GREEN = \033[0;32m
+YELLOW = \033[0;33m
+NC = \033[0m # No Color
 
-setup: ## Setup the project
-	@echo "Setting up the project..."
-	cp .env.example .env
+help: ## Display this help message
+	@echo "Usage: make [target]"
+	@echo ""
+	@echo "Targets:"
+	@awk -F ':|##' '/^[^\t].+?:.*?##/ { printf "  $(CYAN)%-20s$(NC) %s\n", $$1, $$NF }' $(MAKEFILE_LIST)
+
+install: ## Install dependencies
+	@echo "$(GREEN)Installing dependencies...$(NC)"
 	npm install
-	npm run setup-db
 
 dev: ## Start development server
+	@echo "$(GREEN)Starting development server...$(NC)"
 	npm run dev
 
-build: ## Build the project
+build: ## Build for production
+	@echo "$(GREEN)Building for production...$(NC)"
 	npm run build
 
+start: ## Start production server
+	@echo "$(GREEN)Starting production server...$(NC)"
+	npm start
+
+clean: ## Clean build artifacts
+	@echo "$(GREEN)Cleaning build artifacts...$(NC)"
+	rm -rf .next
+	rm -rf node_modules
+
 test: ## Run tests
-	npm run test
+	@echo "$(GREEN)Running tests...$(NC)"
+	npm test
 
 lint: ## Run linter
+	@echo "$(GREEN)Running linter...$(NC)"
 	npm run lint
 
 format: ## Format code
+	@echo "$(GREEN)Formatting code...$(NC)"
 	npm run format
 
-clean: ## Clean build artifacts
-	rm -rf .next
-	rm -rf node_modules
-	rm -rf coverage
-
-# Docker commands
-docker-up: ## Start Docker containers
-	docker-compose up -d
-
-docker-down: ## Stop Docker containers
-	docker-compose down
-
-docker-logs: ## View Docker logs
-	docker-compose logs -f
-
-docker-build: ## Build Docker images
-	docker-compose build
-
-docker-rebuild: ## Rebuild Docker images
-	docker-compose build --no-cache
-
 # Database commands
-db-setup: ## Setup database
-	npm run setup-db
-
 db-migrate: ## Run database migrations
-	npm run migrate
+	@echo "$(GREEN)Running database migrations...$(NC)"
+	npm run db:migrate
+
+db-seed: ## Seed database
+	@echo "$(GREEN)Seeding database...$(NC)"
+	npm run db:seed
 
 db-reset: ## Reset database
-	npm run db:reset
+	@echo "$(YELLOW)Warning: This will reset the database$(NC)"
+	@read -p "Are you sure? [y/N] " confirm; \
+	if [ "$$confirm" = "y" ] || [ "$$confirm" = "Y" ]; then \
+		echo "$(GREEN)Resetting database...$(NC)"; \
+		npm run db:reset; \
+	fi
 
-# Development shortcuts
-dev-docker: docker-up ## Start development environment with Docker
-	@echo "Development environment is ready"
-	@echo "App: http://localhost:3000"
-	@echo "Adminer: http://localhost:8080"
-	@echo "MailHog: http://localhost:8025"
-	@echo "Supabase Studio: http://localhost:3010"
+# Docker commands
+docker-build: ## Build Docker images
+	@echo "$(GREEN)Building Docker images...$(NC)"
+	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) -f $(DOCKER_COMPOSE_OVERRIDE) build
 
-install-deps: ## Install dependencies
-	npm install
+docker-up: ## Start Docker containers
+	@echo "$(GREEN)Starting Docker containers...$(NC)"
+	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) -f $(DOCKER_COMPOSE_OVERRIDE) up -d
 
-update-deps: ## Update dependencies
-	npm update
+docker-down: ## Stop Docker containers
+	@echo "$(GREEN)Stopping Docker containers...$(NC)"
+	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) -f $(DOCKER_COMPOSE_OVERRIDE) down
 
-# Deployment commands
-deploy-prod: ## Deploy to production
-	@echo "Deploying to production..."
-	npm run build
-	# Add your deployment commands here
+# Development environment
+dev-setup: install db-migrate db-seed ## Set up development environment
+	@echo "$(GREEN)Development environment setup complete$(NC)"
 
-deploy-staging: ## Deploy to staging
-	@echo "Deploying to staging..."
-	npm run build
-	# Add your staging deployment commands here
+# Production deployment
+deploy: build ## Deploy to production
+	@echo "$(GREEN)Deploying to production...$(NC)"
+	docker-build
+	docker-up
 
-# Security commands
-security-check: ## Run security checks
-	npm audit
-	npm run lint
+# Monitoring
+monitor: ## Open Grafana dashboard
+	@echo "$(GREEN)Opening Grafana dashboard...$(NC)"
+	open http://localhost:3001
 
-# Documentation commands
-docs: ## Generate documentation
-	@echo "Generating documentation..."
-	# Add your documentation generation commands here
-
-# Cache commands
-clear-cache: ## Clear all caches
-	rm -rf .next
-	npm cache clean --force
-	docker-compose exec redis redis-cli FLUSHALL
-
-# Utility commands
-check-env: ## Check environment variables
-	@echo "Checking environment variables..."
-	@test -f .env || (echo ".env file not found!" && exit 1)
-	@echo "Environment variables are set"
-
-check-health: ## Check application health
-	curl -f http://localhost:3000/api/health || exit 1
+logs: ## View application logs
+	@echo "$(GREEN)Viewing logs...$(NC)"
+	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) -f $(DOCKER_COMPOSE_OVERRIDE) logs -f app
 
 # Default target
 .DEFAULT_GOAL := help

@@ -8,11 +8,11 @@ import { NewsGrid } from "@/components/dashboard/news-grid"
 import { SocialFeed } from "@/components/dashboard/social-feed"
 import { Stats } from "@/components/dashboard/stats"
 import { ProtectedRoute } from "@/components/layout/protected-route"
-import { useAuthContext } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 import { useDb } from "@/lib/db/client"
 
 function MemberDashboard() {
-  const { user, profile, signOut } = useAuthContext()
+  const { user, profile, signOut } = useAuth()
   const [articles, setArticles] = useState([
     {
       id: '1',

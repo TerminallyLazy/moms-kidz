@@ -1,71 +1,53 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import type { Database } from '@/types/supabase'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  const accessToken = requestUrl.hash?.split('access_token=')?.[1]?.split('&')?.[0]
-  const error = requestUrl.searchParams.get('error')
-  const error_description = requestUrl.searchParams.get('error_description')
 
-  console.log('Auth Callback - Starting with:', code ? 'code' : accessToken ? 'token' : 'missing')
-
-  // Handle OAuth errors
-  if (error) {
-    console.error('Auth Callback - OAuth error:', error, error_description)
-    return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(error_description || error)}`, requestUrl.origin)
-    )
-  }
-
-  const supabase = createRouteHandlerClient({ cookies })
-
-  try {
-    let session
-
-    if (code) {
-      console.log('Auth Callback - Exchanging code for session')
-      const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-      if (exchangeError) throw exchangeError
-      session = data.session
-    } else if (accessToken) {
-      console.log('Auth Callback - Setting session from token')
-      const { data: { session: tokenSession }, error: setSessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: requestUrl.hash?.split('refresh_token=')?.[1]?.split('&')?.[0] || ''
-      })
-      if (setSessionError) throw setSessionError
-      session = tokenSession
-    } else {
-      throw new Error('No authentication code or token provided')
-    }
-
-    console.log('Auth Callback - Session established:', !!session)
-
-    // Get the callback URL if it exists
-    const callbackUrl = requestUrl.searchParams.get('callbackUrl')
-    const redirectUrl = callbackUrl || '/member'
-
-    console.log('Auth Callback - Redirecting to:', redirectUrl)
-
-    // Set cookie with session
-    const response = NextResponse.redirect(new URL(redirectUrl, requestUrl.origin))
+  if (code) {
+    const cookieStore = cookies()
+    const supabase = createRouteHandlerClient<Database>({ cookies: () => cookieStore })
     
-    if (session?.access_token) {
-      response.cookies.set('supabase-auth-token', session.access_token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/'
-      })
-    }
+    // Exchange the code for a session
+    await supabase.auth.exchangeCodeForSession(code)
 
-    return response
-  } catch (error) {
-    console.error('Auth Callback - Unexpected error:', error)
-    return NextResponse.redirect(
-      new URL('/login?error=Authentication failed', requestUrl.origin)
-    )
+    // Get the user from the newly created session
+    const { data: { session } } = await supabase.auth.getSession()
+
+    if (session?.user) {
+      // Check if profile exists
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select()
+        .eq('id', session.user.id)
+        .single()
+
+      // If no profile exists, create one
+      if (!profile) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: session.user.id,
+              email: session.user.email,
+              username: session.user.email?.split('@')[0], // Create a default username
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ])
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError)
+          // Redirect to error page if profile creation fails
+          return NextResponse.redirect(`${requestUrl.origin}/auth/error`)
+        }
+      }
+    }
   }
+
+  // Redirect to the dashboard or home page
+  return NextResponse.redirect(`${requestUrl.origin}/dashboard`)
 }

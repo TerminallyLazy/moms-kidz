@@ -1,0 +1,59 @@
+/* TEAM */
+    Creator: Mom's Kidz Team
+    Contact: team@momskidz.com
+    Twitter: @momskidz
+    GitHub: https://github.com/momskidz
+    From: Global
+
+/* THANKS */
+    Parents & Caregivers: For trusting us with your parenting journey
+    Open Source Community: For the amazing tools and libraries
+    Early Adopters: For your valuable feedback and support
+
+/* SITE */
+    Last update: 2024/03/24
+    Language: English
+    Doctype: HTML5
+    IDE: VS Code
+    Stack: Next.js, TypeScript, Tailwind CSS, Supabase
+    
+/* TECHNOLOGY */
+    Frontend:
+        - Next.js 13+
+        - TypeScript
+        - Tailwind CSS
+        - shadcn/ui
+        - Framer Motion
+        - Zustand
+        - React Hook Form
+        - Zod
+        - Recharts
+
+    Backend:
+        - Supabase
+        - PostgreSQL
+        - Row Level Security
+        - Edge Functions
+
+    Infrastructure:
+        - Vercel
+        - Supabase
+        - GitHub Actions
+        - Docker
+
+/* STANDARDS */
+    - HTML5
+    - CSS3
+    - ECMAScript 2021
+    - WAI-ARIA
+    - Progressive Web App
+
+/* PRINCIPLES */
+    - Mobile First
+    - Responsive Design
+    - Accessibility
+    - Performance
+    - Security
+    - Privacy
+
+Made with ❤️ for parents everywhere
