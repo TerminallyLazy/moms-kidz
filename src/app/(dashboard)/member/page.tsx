@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { CreateContentButton } from "@/components/dashboard/content-creator-dialog"
+import { GeminiChat } from "@/components/chat/gemini-chat"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Settings, LogOut, Calendar, Plus, Bell, Loader2 } from "lucide-react"
@@ -25,28 +26,32 @@ import { TrendingContent } from "@/components/dashboard/trending-content"
 import { FacebookPage } from '@/components/social/facebook-page'
 import { GamificationProvider } from "@/contexts/gamification-context"
 import { CareLog } from "@/components/dashboard/care-log"
+import { CreateContentButton } from "@/components/dashboard/content-creator-dialog"
 import { CareLogInsights } from "@/components/dashboard/care-log-insights"
 
-// Social Media API configurations
+const ENABLE_SOCIAL = process.env.NEXT_PUBLIC_ENABLE_SOCIAL === 'true'
 const SOCIAL_CONFIG = {
   tiktok: {
-    apiKey: process.env.NEXT_PUBLIC_TIKTOK_API_KEY,
-    apiSecret: process.env.NEXT_PUBLIC_TIKTOK_API_SECRET,
     userId: process.env.NEXT_PUBLIC_TIKTOK_USER_ID,
+    apiKey: process.env.NEXT_PUBLIC_TIKTOK_API_KEY,
   },
   facebook: {
-    appId: process.env.NEXT_PUBLIC_FACEBOOK_APP_ID,
     pageId: process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID,
     accessToken: process.env.NEXT_PUBLIC_FACEBOOK_ACCESS_TOKEN,
   },
   instagram: {
-    apiKey: process.env.NEXT_PUBLIC_INSTAGRAM_API_KEY,
     username: process.env.NEXT_PUBLIC_INSTAGRAM_USERNAME,
+    apiKey: process.env.NEXT_PUBLIC_INSTAGRAM_API_KEY,
   }
 }
 
-// Temporarily enable social features for testing
-const ENABLE_SOCIAL = true
+export default function MemberPage() {
+  return (
+    <ProtectedRoute>
+      <MemberDashboard />
+    </ProtectedRoute>
+  )
+}
 
 function MemberDashboard() {
   const { user, profile, signOut } = useAuth()
@@ -85,18 +90,28 @@ function MemberDashboard() {
     error: null
   }
 
+  interface Article {
+    id: string;
+    title: string;
+    description: string;
+    imageUrl: string;
+    category: string;
+    type: 'article' | 'video';
+    url: string;
+  }
+
   const handleContentCreated = () => {
     // Refresh the feeds or relevant data
     toast.success("Content created successfully!")
   }
-  const [articles, setArticles] = useState([
+  const [articles, setArticles] = useState<Article[]>([
     {
       id: '1',
       title: "Understanding Child Development Milestones",
       description: "A comprehensive guide to tracking your child's developmental progress through key milestones.",
       imageUrl: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=400&h=300&auto=format&fit=crop",
       category: "Pediatric",
-      type: 'article',
+      type: "article" as const,
       url: "https://openmd.com/directory/pediatric/child-development",
     },
     {
@@ -105,7 +120,7 @@ function MemberDashboard() {
       description: "Expert advice on maintaining optimal health and wellness for women at every life stage.",
       imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&auto=format&fit=crop",
       category: "Women's Health",
-      type: 'article',
+      type: 'article' as const,
       url: "https://openmd.com/directory/women-health/wellness",
     },
     {
@@ -114,7 +129,7 @@ function MemberDashboard() {
       description: "Learn the basics of parenting in this comprehensive video guide.",
       imageUrl: "https://images.unsplash.com/photo-1531722569936-825d3dd91b15?w=400&h=300&auto=format&fit=crop",
       category: "Tutorial",
-      type: 'video',
+      type: 'video' as const,
       url: "https://example.com/parenting-basics",
     },
     {
@@ -123,7 +138,7 @@ function MemberDashboard() {
       description: "Master advanced parenting techniques with our expert instructors.",
       imageUrl: "https://images.unsplash.com/photo-1584545284372-f22510eb7c26?w=400&h=300&auto=format&fit=crop",
       category: "Tutorial",
-      type: 'video',
+      type: 'video' as const,
       url: "https://example.com/advanced-parenting",
     }
   ])
@@ -278,6 +293,13 @@ function MemberDashboard() {
         className="min-h-screen bg-white dark:bg-gray-950"
       >
         <main className="container py-8">
+          <Tabs defaultValue="dashboard" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="assistant">AI Assistant</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="dashboard">
           <motion.div 
             initial={{ y: -20 }}
             animate={{ y: 0 }}
@@ -464,8 +486,8 @@ function MemberDashboard() {
             <div className="lg:col-span-4 space-y-8">
               <CommunityFeed 
                 userId={user?.id || ''}
-                userName={profile?.username || ''}
-                userAvatar={profile?.avatar}
+                userName={profile?.name || ''}
+                userAvatar={profile?.image_url ?? undefined}
               />
               <NewsGrid articles={articles} onSearch={handleSearch} />
             </div>
@@ -473,8 +495,8 @@ function MemberDashboard() {
             <div className="lg:col-span-4 space-y-8">
               <AIChat 
                 userId={user?.id || ''}
-                userName={profile?.username || ''}
-                userAvatar={profile?.avatar}
+                userName={profile?.name || ''}
+                userAvatar={profile?.image_url ?? undefined}
               />
               <TrendingContent 
                 userId={user?.id || ''}
@@ -494,6 +516,14 @@ function MemberDashboard() {
               isLoading={isLoadingSocial}
             />
           </div>
+            </TabsContent>
+
+            <TabsContent value="assistant" className="mt-6">
+              <div className="mx-auto max-w-5xl">
+                <GeminiChat />
+              </div>
+            </TabsContent>
+          </Tabs>
 
           <ActivityForm
             open={showActivityForm}
@@ -634,13 +664,5 @@ function LoadingDashboard() {
         </div>
       </div>
     </div>
-  )
-}
-
-export default function MemberPage() {
-  return (
-    <ProtectedRoute>
-      <MemberDashboard />
-    </ProtectedRoute>
   )
 }

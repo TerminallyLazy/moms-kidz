@@ -2,7 +2,32 @@ Mom's Kidz v3 - Technical Overview
 
 A sophisticated Next.js 13+ web application designed as both a parenting support platform and pediatric data acquisition system. The application combines modern web technologies with gamification elements to create an engaging user experience while collecting valuable research data.
 
-Core Technical Stack:
+## Recent Updates
+
+### Gemini AI Integration
+- Implemented an AI assistant powered by Google's Gemini Pro
+- Feature-rich chat interface with dark mode optimization
+- Keyboard shortcuts for improved usability
+- Suggested prompts for common parenting questions
+- Real-time message streaming
+- Responsive and accessible design
+
+### Enhanced UI/UX
+- Improved dark mode with custom gradient glows
+- Smooth animations using Framer Motion
+- Keyboard-first navigation
+- Tooltip system for better discoverability
+- Improved spacing and layout in member dashboard
+- Custom scrollbar styling
+
+### Dark Mode Improvements
+- Custom gradient effects for chat messages
+- Subtle purple glow effects for interactive elements
+- Enhanced contrast and readability
+- Smooth theme transitions
+- Consistent color scheme across components
+
+## Core Technical Stack:
 - Frontend: Next.js 13+ with App Router
 - Language: TypeScript
 - Database: PostgreSQL (via Supabase) with Prisma ORM
@@ -12,6 +37,7 @@ Core Technical Stack:
 - Forms: React Hook Form + Zod validation
 - Data Visualization: Recharts
 - Animations: Framer Motion
+- AI Integration: Google Generative AI (Gemini Pro)
 
 Key Features:
 1. Progressive Web App (PWA) Support

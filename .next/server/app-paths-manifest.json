@@ -1,7 +1,3 @@
 {
-  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
-  "/(dashboard)/care-log/page": "app/(dashboard)/care-log/page.js",
-  "/(dashboard)/activities/page": "app/(dashboard)/activities/page.js",
-  "/(dashboard)/profile/page": "app/(dashboard)/profile/page.js",
-  "/(dashboard)/achievements/page": "app/(dashboard)/achievements/page.js"
+  "/(dashboard)/member/page": "app/(dashboard)/member/page.js"
 }

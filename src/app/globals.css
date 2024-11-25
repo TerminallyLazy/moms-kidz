@@ -33,6 +33,12 @@
     --ring: 222.2 84% 4.9%;
  
     --radius: 0.5rem;
+
+    /* Chat Theme Colors */
+    --chat-bg: 0 0% 100%;
+    --chat-message-user: 222.2 47.4% 11.2%;
+    --chat-message-assistant: 210 40% 96.1%;
+    --chat-glow: 271 81% 65%;
   }
  
   .dark {
@@ -63,6 +69,12 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+
+    /* Dark Mode Chat Theme Colors */
+    --chat-bg: 240 10% 4%;
+    --chat-message-user: 271 81% 65%;
+    --chat-message-assistant: 240 10% 8%;
+    --chat-glow: 271 81% 65%;
   }
 }
  
@@ -105,6 +117,38 @@
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* Chat Component Styles */
+.chat-container {
+  @apply bg-[hsl(var(--chat-bg))];
+  backdrop-filter: blur(8px);
+}
+
+.chat-message-user {
+  background: linear-gradient(135deg, hsl(var(--chat-message-user)), hsl(var(--chat-message-user)/0.9));
+  box-shadow: 0 4px 15px -3px hsl(var(--chat-glow)/0.2);
+}
+
+.chat-message-assistant {
+  background: linear-gradient(135deg, hsl(var(--chat-message-assistant)), hsl(var(--chat-message-assistant)/0.9));
+  box-shadow: 0 4px 15px -3px hsl(var(--chat-glow)/0.1);
+}
+
+.chat-input {
+  @apply bg-[hsl(var(--chat-bg))];
+  box-shadow: 0 0 15px -5px hsl(var(--chat-glow)/0.1);
+  border: 1px solid hsl(var(--chat-glow)/0.1);
+}
+
+.chat-send-button {
+  background: linear-gradient(135deg, hsl(var(--chat-message-user)), hsl(var(--chat-message-user)/0.9));
+  box-shadow: 0 4px 15px -3px hsl(var(--chat-glow)/0.3);
+}
+
+.chat-send-button:hover {
+  background: linear-gradient(135deg, hsl(var(--chat-message-user)/0.9), hsl(var(--chat-message-user)));
+  box-shadow: 0 4px 20px -3px hsl(var(--chat-glow)/0.4);
 }
 
 /* Animation Classes */
@@ -160,4 +204,23 @@
   );
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
+}
+
+/* Chat Loading Animation */
+@keyframes chat-loading {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.chat-loading-dot {
+  @apply bg-purple-500 dark:bg-purple-400;
+  animation: chat-loading 1s infinite;
+}
+
+.chat-loading-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.chat-loading-dot:nth-child(3) {
+  animation-delay: 0.4s;
 }

@@ -9,17 +9,41 @@ A sophisticated Next.js 13+ web application designed as both a parenting support
 make install
 ```
 
-2. Initialize monitoring stack:
+2. Set up environment variables:
+```bash
+cp .env.example .env.local
+```
+
+Required environment variables:
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+
+# Google AI Configuration
+GOOGLE_AI_API_KEY=your_gemini_api_key
+
+# Authentication
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_nextauth_secret
+
+# Optional Social Media Integration
+NEXT_PUBLIC_TIKTOK_API_KEY=optional
+NEXT_PUBLIC_FACEBOOK_APP_ID=optional
+NEXT_PUBLIC_INSTAGRAM_API_KEY=optional
+```
+
+3. Initialize monitoring stack:
 ```bash
 make monitoring-init
 ```
 
-3. Start all services:
+4. Start all services:
 ```bash
 make start
 ```
 
-4. Open Grafana dashboard:
+5. Open Grafana dashboard:
 ```bash
 make monitoring-dashboard
 ```
@@ -36,6 +60,56 @@ Format and lint code:
 make format
 make lint
 ```
+
+## Features
+
+### AI Assistant
+- 🤖 Gemini-powered AI chat
+- ⌨️ Keyboard shortcuts support
+- 💡 Suggested prompts
+- 🎨 Dark mode optimized UI
+- ⚡ Real-time streaming responses
+
+### Core Features
+- 🔐 Authentication with Supabase Auth
+- 🎨 Theming with next-themes
+- 📱 Responsive design
+- 🎭 Animations with Framer Motion
+- 📊 Data visualization with Recharts
+- 🔄 Real-time updates
+- 🎯 Form validation with Zod
+- 📝 Rich text editing
+- 🌙 Dark mode support
+- ⌨️ Keyboard shortcuts
+- 🎮 Gamification system
+- 📈 Progress tracking
+- 🤝 Social features
+- 📊 Real-time analytics
+- 🔔 Push notifications
+- 📱 PWA support
+
+## Tech Stack
+
+- **Framework:** Next.js 13+ (App Router)
+- **Language:** TypeScript
+- **Auth:** Supabase Auth
+- **Database:** Supabase (PostgreSQL)
+- **Styling:** Tailwind CSS + shadcn/ui
+- **Animation:** Framer Motion
+- **State Management:** Zustand
+- **Form Handling:** React Hook Form + Zod
+- **Data Visualization:** Recharts
+- **AI Integration:** Google Generative AI
+- **Monitoring:** Grafana + Prometheus + Loki
+
+## Keyboard Shortcuts
+
+| Action | Shortcut |
+|--------|----------|
+| Send Message | ⌘/Ctrl + Enter |
+| Clear Chat | ⌘/Ctrl + L |
+| Focus Chat Input | ⌘/Ctrl + K |
+| Clear Input | Esc |
 
 ## Database Management
 
@@ -110,60 +184,6 @@ Update services:
 ```bash
 make update
 ```
-
-## Service Management
-
-Start all services:
-```bash
-make start
-```
-
-Stop all services:
-```bash
-make stop
-```
-
-Restart all services:
-```bash
-make restart
-```
-
-Clean up:
-```bash
-make clean
-```
-
-## Features
-
-- 🔐 Authentication with Supabase Auth
-- 🎨 Theming with next-themes
-- 📱 Responsive design
-- 🎭 Animations with Framer Motion
-- 📊 Data visualization with Recharts
-- 🔄 Real-time updates
-- 🎯 Form validation with Zod
-- 📝 Rich text editing
-- 🌙 Dark mode support
-- ⌨️ Keyboard shortcuts
-- 🎮 Gamification system
-- 📈 Progress tracking
-- 🤝 Social features
-- 📊 Real-time analytics
-- 🔔 Push notifications
-- 📱 PWA support
-
-## Tech Stack
-
-- **Framework:** Next.js 13+ (App Router)
-- **Language:** TypeScript
-- **Auth:** Supabase Auth
-- **Database:** Supabase (PostgreSQL)
-- **Styling:** Tailwind CSS + shadcn/ui
-- **Animation:** Framer Motion
-- **State Management:** Zustand
-- **Form Handling:** React Hook Form + Zod
-- **Data Visualization:** Recharts
-- **Monitoring:** Grafana + Prometheus + Loki
 
 ## Contributing
 

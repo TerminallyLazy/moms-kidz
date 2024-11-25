@@ -41,6 +41,8 @@ export interface Challenge {
 export type ChallengeType = "daily" | "weekly" | "special" | "group";
 
 export interface Streak {
+  id: any;
+  streakId: any;
   activity: string;
   count: number;
   lastUpdated: Date;

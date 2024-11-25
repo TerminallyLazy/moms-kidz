@@ -5,14 +5,14 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 1,
   "links": [],
-  "liveNow": true,
+  "liveNow": false,
   "panels": [
     {
       "datasource": {
-        "type": "postgres",
-        "uid": "supabase"
+        "type": "prometheus",
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -26,6 +26,10 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           }
@@ -52,12 +56,15 @@
       "pluginVersion": "10.0.0",
       "targets": [
         {
-          "expr": "mom_kidz_care_log_entries_today",
-          "legendFormat": "Today's Entries",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "job:care_log_entries:rate5m",
           "refId": "A"
         }
       ],
-      "title": "Today's Care Log Entries",
+      "title": "Care Log Entry Rate (5m)",
       "type": "gauge"
     },
     {
@@ -310,20 +317,18 @@
   "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["mom-kidz", "care-log"],
+  "tags": ["care-log", "analytics"],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-6h",
     "to": "now"
   },
-  "timepicker": {
-    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
-  },
+  "timepicker": {},
   "timezone": "",
-  "title": "Mom's Kidz Care Log Analytics",
-  "uid": "mom-kidz-care-log",
+  "title": "Care Log Analytics",
+  "uid": "care-log-analytics",
   "version": 1,
   "weekStart": ""
 }

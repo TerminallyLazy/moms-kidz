@@ -33,6 +33,7 @@ model User {
   careLogAnalytics  CareLogAnalytics[]
   careLogTemplates  CareLogTemplate[]
   careLogReminders  CareLogReminder[]
+  challenges        Challenge[]
 }
 
 model Activity {

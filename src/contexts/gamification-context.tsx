@@ -1,87 +1,91 @@
 "use client"
 
-import { createContext, useContext, useReducer, useEffect } from 'react'
-import { logger } from '@/lib/logger'
-import { prisma } from '@/lib/db'
-import { PointsTransaction } from '@/types/gamification'
+import React, { createContext, useContext, useReducer, useEffect } from 'react'
+import { useAuth } from '@/hooks/use-auth'
+import { toast } from 'sonner'
+import { ACTIVITY_POINTS as DEFAULT_ACTIVITY_POINTS } from '@/constants/activity-points'
+import { Card } from '@/components/ui/card'
+import { PointsTransaction, Streak } from '@/types/gamification'
+
+// Types
+export interface Achievement {
+  id: string
+  title: string
+  description: string
+  points: number
+  icon: string
+  type: string
+  unlocked: boolean
+  progress: number
+  maxProgress: number
+  dateUnlocked?: Date
+  unlockedAt?: Date
+}
+
+export interface Challenge {
+  id: string
+  title: string
+  description: string
+  points: number
+  deadline?: Date
+  progress: number
+  completed: boolean
+}
 
 interface GamificationState {
+  activeChallenges: any
   points: number
   level: number
-  streaks: {
-    [key: string]: number
-  }
+  streak: Streak[]
   achievements: Achievement[]
   challenges: Challenge[]
-  rewards: Reward[]
+  completedChallenges: Challenge[]
+  lastActivity: Date | null
+  loading: boolean
 }
 
-interface Achievement {
-  id: string
-  title: string
-  description: string
-  points: number
-  unlockedAt?: Date
-  type: string
-  progress: number
-  metadata?: any
+interface GamificationContextType {
+  state: GamificationState
+  dispatch: React.Dispatch<GamificationAction>
+  trackEvent: (event: GamificationEvent) => void
+  checkAchievements: () => void
 }
 
-interface Challenge {
-  id: string
-  title: string
-  description: string
-  points: number
-  type: string
-  requirements: any
-  progress: number
-  expiresAt?: Date
-  metadata?: any
+interface GamificationEvent {
+  type: 'activity_log' | 'milestone' | 'social' | 'challenge'
+  action: string
+  metadata?: {
+    withPhoto?: boolean
+    quality?: 'high' | 'low'
+    weather?: string
+    time?: Date
+  }
 }
 
-interface Reward {
-  id: string
-  title: string
-  description: string
-  cost: number
-  type: string
-  claimed: boolean
-  metadata?: any
-}
-
-type GamificationAction =
-  | { type: 'ADD_POINTS'; payload: number }
-  | { type: 'UPDATE_LEVEL'; payload: number }
-  | { type: 'UPDATE_STREAK'; payload: { type: string; count: number } }
-  | { type: 'UNLOCK_ACHIEVEMENT'; payload: Achievement }
-  | { type: 'UPDATE_CHALLENGE'; payload: Challenge }
-  | { type: 'CLAIM_REWARD'; payload: string }
-  | { type: 'SET_STATE'; payload: Partial<GamificationState> }
-
-interface GamificationContextType extends GamificationState {
-  addPoints: (points: number, reason: string) => Promise<void>
-  trackActivity: (type: string, metadata?: any) => Promise<void>
-  checkAchievements: () => Promise<void>
-  claimReward: (rewardId: string) => Promise<void>
-  getProgress: (type: string) => number
-}
-
+// Initial state
 const initialState: GamificationState = {
   points: 0,
   level: 1,
-  streaks: {},
+  streak: [],
   achievements: [],
   challenges: [],
-  rewards: []
+  completedChallenges: [],
+  lastActivity: null,
+  loading: false,
+  activeChallenges: undefined
 }
 
-// Action Types
+// Action types
 type GamificationAction =
+  | { type: 'SET_INITIAL_STATE'; payload: Partial<GamificationState> }
   | { type: 'ADD_POINTS'; payload: { points: number; transaction: PointsTransaction } }
+  | { type: 'UPDATE_LEVEL'; payload: number }
   | { type: 'UPDATE_STREAK'; payload: Streak }
+  | { type: 'UNLOCK_ACHIEVEMENT'; payload: Achievement }
   | { type: 'COMPLETE_CHALLENGE'; payload: string }
-  | { type: 'ADD_ACHIEVEMENT'; payload: Achievement }
+  | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'UPDATE_PROGRESS'; payload: { challengeId: string; progress: number } }
+  | { type: 'ADD_ACHIEVEMENT'; payload: Achievement }
   | { type: 'RESET_DAILY' }
 
 // Helper Functions
@@ -102,47 +106,43 @@ const calculateWeatherBonus = (weather: string): number => {
   }
 }
 
-// Reducer
-function gamificationReducer(state: UserStats, action: GamificationAction): UserStats {
+// Remove duplicate function declaration and merge with existing reducer
+export const gamificationReducer = (state: GamificationState, action: GamificationAction): GamificationState => {
   switch (action.type) {
     case 'ADD_POINTS': {
-      const { points, transaction } = action.payload
-      const newTotalPoints = state.totalPoints + points
-      const newXP = state.xp + points
+      const newTotalPoints = state.points + action.payload.points
       const level = Math.floor(Math.sqrt(newTotalPoints / 100)) + 1
-      const xpToNextLevel = Math.pow((level + 1) * 10, 2) - Math.pow(level * 10, 2)
 
       return {
         ...state,
-        totalPoints: newTotalPoints,
+        points: newTotalPoints,
         level,
-        xp: newXP,
-        xpToNextLevel
       }
     }
 
     case 'UPDATE_STREAK': {
-      const existingStreakIndex = state.streaks.findIndex(
-        s => s.activity === action.payload.activity
+      const existingStreakIndex = state.streak.findIndex(
+          (s: Streak) => s.activity === action.payload.activity
       )
-
       const newStreaks = existingStreakIndex >= 0
-        ? state.streaks.map((s, i) => i === existingStreakIndex ? action.payload : s)
-        : [...state.streaks, action.payload]
+        ? state.streak.map((s: Streak) =>
+            s.activity === action.payload.activity ? action.payload : s
+          )
+        : [...state.streak, action.payload]
 
       return {
         ...state,
-        streaks: newStreaks
+        streak: newStreaks as Streak[]
       }
     }
 
     case 'COMPLETE_CHALLENGE': {
-      const challenge = state.activeChallenges.find(c => c.id === action.payload)
+      const challenge = state.challenges.find(c => c.id === action.payload)
       if (!challenge) return state
 
       return {
         ...state,
-        activeChallenges: state.activeChallenges.filter(c => c.id !== action.payload),
+        challenges: state.challenges.filter(c => c.id !== action.payload),
         completedChallenges: [...state.completedChallenges, { ...challenge, completed: true }]
       }
     }
@@ -158,7 +158,7 @@ function gamificationReducer(state: UserStats, action: GamificationAction): User
 
     case 'UPDATE_PROGRESS': {
       const { challengeId, progress } = action.payload
-      const updatedChallenges = state.activeChallenges.map(challenge =>
+      const updatedChallenges = state.activeChallenges.map((challenge: { id: any; maxProgress: number }) =>
         challenge.id === challengeId
           ? { ...challenge, progress: Math.min(challenge.maxProgress, progress) }
           : challenge
@@ -173,7 +173,7 @@ function gamificationReducer(state: UserStats, action: GamificationAction): User
     case 'RESET_DAILY': {
       return {
         ...state,
-        activeChallenges: state.activeChallenges.filter(c => c.type !== 'daily')
+        activeChallenges: state.activeChallenges.filter((c: { type: string }) => c.type !== 'daily')
       }
     }
 
@@ -184,63 +184,20 @@ function gamificationReducer(state: UserStats, action: GamificationAction): User
 
 const GamificationContext = createContext<GamificationContextType | undefined>(undefined)
 
-function gamificationReducer(state: GamificationState, action: GamificationAction): GamificationState {
-  switch (action.type) {
-    case 'ADD_POINTS':
-      return {
-        ...state,
-        points: state.points + action.payload
-      }
-    case 'UPDATE_LEVEL':
-      return {
-        ...state,
-        level: action.payload
-      }
-    case 'UPDATE_STREAK':
-      return {
-        ...state,
-        streaks: {
-          ...state.streaks,
-          [action.payload.type]: action.payload.count
-        }
-      }
-    case 'UNLOCK_ACHIEVEMENT':
-      return {
-        ...state,
-        achievements: [...state.achievements, action.payload]
-      }
-    case 'UPDATE_CHALLENGE':
-      return {
-        ...state,
-        challenges: state.challenges.map(challenge =>
-          challenge.id === action.payload.id ? action.payload : challenge
-        )
-      }
-    case 'CLAIM_REWARD':
-      return {
-        ...state,
-        rewards: state.rewards.map(reward =>
-          reward.id === action.payload ? { ...reward, claimed: true } : reward
-        )
-      }
-    case 'SET_STATE':
-      return {
-        ...state,
-        ...action.payload
-      }
-    default:
-      return state
-  }
+// Calculate level based on points
+function calculateLevel(points: number): number {
+  return Math.floor(Math.sqrt(points / 100)) + 1
 }
 
-export function GamificationProvider({
-  children,
-  userId
-}: {
+// Provider
+interface GamificationProviderProps {
   children: React.ReactNode
   userId: string
-}) {
+}
+
+export function GamificationProvider({ children, userId }: GamificationProviderProps) {
   const [state, dispatch] = useReducer(gamificationReducer, initialState)
+  const { user } = useAuth()
 
   const trackEvent = (event: GamificationEvent) => {
     let points = 0
@@ -249,7 +206,7 @@ export function GamificationProvider({
     // Calculate base points
     switch (event.type) {
       case 'activity_log': {
-        const activityPoints = DEFAULT_ACTIVITY_POINTS[event.action as keyof ActivityPoints] || 0
+        const activityPoints = DEFAULT_ACTIVITY_POINTS[event.action as keyof typeof DEFAULT_ACTIVITY_POINTS] || 0
         points += activityPoints
         transactions.push({
           id: crypto.randomUUID(),
@@ -354,7 +311,9 @@ export function GamificationProvider({
       const streak: Streak = {
         activity: event.action,
         count: 1,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
+        id: undefined,
+        streakId: undefined
       }
       dispatch({ type: 'UPDATE_STREAK', payload: streak })
     }
@@ -385,10 +344,10 @@ export function GamificationProvider({
     if (state.level >= 5) {
       const achievement: Achievement = {
         id: 'level_5',
-        name: 'Rising Star',
+        title: 'Rising Star',
         description: 'Reached Level 5',
         icon: '🌟',
-        category: 'special',
+        type: 'special',
         points: 500,
         unlocked: true,
         progress: 5,
@@ -399,29 +358,28 @@ export function GamificationProvider({
     }
 
     // Check streak achievements
-    state.streaks.forEach(streak => {
+    Object.values(state.streak).forEach((streak: Streak) => {
       if (streak.count >= 7) {
         const achievement: Achievement = {
           id: `streak_7_${streak.activity}`,
-          name: 'Consistency Champion',
+          title: 'Consistency Champion',
           description: `Maintained a 7-day streak in ${streak.activity}`,
           icon: '🔥',
-          category: 'care',
+          type: 'care',
           points: 250,
           unlocked: true,
           progress: 7,
           maxProgress: 7,
           dateUnlocked: new Date()
         }
-        dispatch({ type: 'ADD_ACHIEVEMENT', payload: achievement })
+        dispatch({ type: 'UNLOCK_ACHIEVEMENT', payload: achievement })
       }
     })
-  }
-
+  } 
   // Check achievements whenever state changes
   useEffect(() => {
     checkAchievements()
-  }, [state.level, state.streaks])
+  }, [state.level, state.streak])
 
   // Reset daily challenges at midnight
   useEffect(() => {
@@ -430,14 +388,19 @@ export function GamificationProvider({
     const timeUntilMidnight = tomorrow.getTime() - now.getTime()
 
     const timer = setTimeout(() => {
-      dispatch({ type: 'RESET_DAILY' })
+      dispatch({ type: 'SET_INITIAL_STATE', payload: { challenges: [] } })
     }, timeUntilMidnight)
 
     return () => clearTimeout(timer)
   }, [])
 
   return (
-    <GamificationContext.Provider value={{ state, dispatch, trackEvent, checkAchievements }}>
+    <GamificationContext.Provider value={{ 
+      state,
+      dispatch, 
+      trackEvent, 
+      checkAchievements 
+    }}>
       {children}
     </GamificationContext.Provider>
   )
@@ -452,4 +415,4 @@ export function useGamification() {
   return context
 }
 
-export type { Challenge }
+export type { GamificationState }

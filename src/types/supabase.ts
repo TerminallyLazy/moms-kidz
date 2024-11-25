@@ -106,6 +106,32 @@ export type Database = {
         }
         Relationships: []
       }
+      challenges: {
+        Row: {
+          title: string
+          description: string
+          type: string
+          points_reward: number
+          requirements: any
+          metadata: any
+        }
+        Insert: {
+          title: string
+          description: string
+          type: string
+          points_reward: number
+          requirements: any
+          metadata: any
+        }
+        Update: {
+          title: string
+          description: string
+          type: string
+          points_reward: number
+          requirements: any
+          metadata: any
+        }
+      }
     }
     Views: {
       [_ in never]: never

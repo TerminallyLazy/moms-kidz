@@ -26,7 +26,13 @@ interface AIError {
   error: string
 }
 
-export function AIChat({ userId }: { userId: string }) {
+interface AIChatProps {
+  userId: string
+  userName?: string
+  userAvatar?: string | null
+}
+
+export function AIChat({ userId, userName, userAvatar }: AIChatProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)

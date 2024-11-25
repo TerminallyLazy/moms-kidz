@@ -12,9 +12,9 @@ export function useDb() {
 // Example of a client-side function
 export async function getClientData(userId: string) {
   const { data, error } = await supabaseClient
-    .from('some_table')
+    .from('profiles')
     .select('*')
-    .eq('user_id', userId)
+    .eq('id', userId)
 
   if (error) throw error
 
