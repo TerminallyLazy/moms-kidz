@@ -1,0 +1,141 @@
+groups:
+  - name: care-log-alerts
+    rules:
+      # Activity Level Alerts
+      - alert: LowDailyCareLogActivity
+        expr: mom_kidz_care_log_entries_today < histogram_quantile(0.1, rate(mom_kidz_care_log_entries_bucket[7d]))
+        for: 2h
+        labels:
+          severity: warning
+          category: activity
+        annotations:
+          summary: "Low care log activity today"
+          description: "Care log entries today are significantly lower than usual"
+
+      - alert: NoRecentCareLogEntries
+        expr: time() - max(mom_kidz_care_log_last_entry) by (user_id) > 86400
+        for: 12h
+        labels:
+          severity: warning
+          category: activity
+        annotations:
+          summary: "Users missing daily care logs"
+          description: "Some users haven't logged any care activities in 24 hours"
+
+      # Streak Alerts
+      - alert: StreakAtRisk
+        expr: |
+          mom_kidz_care_log_streak_current > 7 and
+          time() - max(mom_kidz_care_log_last_entry) by (user_id) > 64800 # 18 hours
+        for: 1h
+        labels:
+          severity: warning
+          category: streaks
+        annotations:
+          summary: "User streak at risk"
+          description: "Users with significant streaks haven't logged entries today"
+
+      - alert: LongStreakBroken
+        expr: changes(mom_kidz_care_log_streak_broken[1d]) > 0 and mom_kidz_care_log_streak_length > 14
+        labels:
+          severity: info
+          category: streaks
+        annotations:
+          summary: "Long streak broken"
+          description: "A user's streak of more than 14 days has been broken"
+
+      # Engagement Alerts
+      - alert: UserEngagementDrop
+        expr: |
+          (
+            mom_kidz_care_log_active_users_today / 
+            avg_over_time(mom_kidz_care_log_active_users_today[7d])
+          ) < 0.7
+        for: 6h
+        labels:
+          severity: warning
+          category: engagement
+        annotations:
+          summary: "User engagement has dropped"
+          description: "Active users today are 30% below the weekly average"
+
+      - alert: UnusualActivityPattern
+        expr: |
+          abs(
+            mom_kidz_care_log_entries_by_type / 
+            avg_over_time(mom_kidz_care_log_entries_by_type[7d])
+            - 1
+          ) > 0.5
+        for: 3h
+        labels:
+          severity: warning
+          category: patterns
+        annotations:
+          summary: "Unusual activity pattern detected"
+          description: "Activity distribution differs significantly from normal patterns"
+
+      # Duration Alerts
+      - alert: UnusuallyShortEntries
+        expr: mom_kidz_care_log_avg_duration_today < histogram_quantile(0.1, rate(mom_kidz_care_log_duration_bucket[7d]))
+        for: 3h
+        labels:
+          severity: warning
+          category: quality
+        annotations:
+          summary: "Unusually short care log entries"
+          description: "Average entry duration is significantly shorter than usual"
+
+      - alert: InconsistentLogging
+        expr: stddev_over_time(mom_kidz_care_log_entries_by_type[24h]) > 2 * avg_over_time(stddev_over_time(mom_kidz_care_log_entries_by_type[24h])[7d:1h])
+        for: 6h
+        labels:
+          severity: warning
+          category: patterns
+        annotations:
+          summary: "Inconsistent logging patterns"
+          description: "Unusual variation in care log entry patterns detected"
+
+  # Recording rules for frequently used queries
+  - name: care-log-recordings
+    rules:
+      - record: mom_kidz:care_log:daily_entries_avg_7d
+        expr: avg_over_time(mom_kidz_care_log_entries_today[7d])
+
+      - record: mom_kidz:care_log:active_users_avg_7d
+        expr: avg_over_time(mom_kidz_care_log_active_users_today[7d])
+
+      - record: mom_kidz:care_log:type_distribution_7d
+        expr: avg_over_time(mom_kidz_care_log_entries_by_type[7d])
+
+      - record: mom_kidz:care_log:streak_stats
+        expr: |
+          {
+            avg = avg(mom_kidz_care_log_streak_current),
+            max = max(mom_kidz_care_log_streak_current),
+            active_streaks = count(mom_kidz_care_log_streak_current > 0)
+          }
+
+      - record: mom_kidz:care_log:engagement_score
+        expr: |
+          (
+            mom_kidz_care_log_active_users_today / 
+            mom_kidz:care_log:active_users_avg_7d
+          ) * (
+            mom_kidz_care_log_entries_today / 
+            mom_kidz:care_log:daily_entries_avg_7d
+          ) * (
+            count(mom_kidz_care_log_streak_current > 0) /
+            count(mom_kidz_care_log_streak_current)
+          )
+
+      # Predictive metrics
+      - record: mom_kidz:care_log:predicted_entries_today
+        expr: predict_linear(mom_kidz_care_log_entries_today[7d], 86400)
+
+      - record: mom_kidz:care_log:trend_indicator
+        expr: |
+          clamp_min(
+            mom_kidz_care_log_entries_today / 
+            mom_kidz:care_log:daily_entries_avg_7d,
+            0
+          )

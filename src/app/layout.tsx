@@ -1,9 +1,18 @@
 import { Inter } from "next/font/google"
 import { ClientProviders } from "@/components/providers/client-providers"
 import { PWAPrompt } from "@/components/pwa-prompt"
+import init from "@/lib/init"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
+
+// Initialize application
+if (typeof window === 'undefined') { // Only run on server
+  init.initialize().catch(error => {
+    console.error('Failed to initialize application:', error)
+    process.exit(1)
+  })
+}
 
 export const metadata = {
   title: "Mom's Kidz",

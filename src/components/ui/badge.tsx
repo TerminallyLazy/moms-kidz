@@ -1,8 +1,5 @@
-"use client"
-
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(
@@ -17,18 +14,26 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground",
-        success:
-          "border-transparent bg-green-500/20 text-green-600 dark:bg-green-500/10 dark:text-green-400",
+        success: 
+          "border-transparent bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
         warning:
-          "border-transparent bg-yellow-500/20 text-yellow-600 dark:bg-yellow-500/10 dark:text-yellow-400",
+          "border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
         info:
-          "border-transparent bg-blue-500/20 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400",
+          "border-transparent bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+        purple:
+          "border-transparent bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
         gradient:
-          "border-transparent bg-gradient-to-r from-purple-600 to-pink-600 text-white dark:from-purple-400 dark:to-pink-400",
+          "border-transparent bg-gradient-to-r from-purple-600 to-pink-600 text-white dark:from-purple-500 dark:to-pink-500",
+      },
+      size: {
+        default: "px-2.5 py-0.5 text-xs",
+        sm: "px-2 py-0.5 text-xs",
+        lg: "px-3 py-1 text-sm",
       },
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   }
 )
@@ -36,20 +41,15 @@ const badgeVariants = cva(
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {
-  onClick?: () => void
+  icon?: React.ReactNode
 }
 
-function Badge({ className, variant, onClick, ...props }: BadgeProps) {
+function Badge({ className, variant, size, icon, children, ...props }: BadgeProps) {
   return (
-    <div
-      className={cn(
-        badgeVariants({ variant }),
-        onClick && "cursor-pointer hover:opacity-90",
-        className
-      )}
-      onClick={onClick}
-      {...props}
-    />
+    <div className={cn(badgeVariants({ variant, size }), className)} {...props}>
+      {icon && <span className="mr-1">{icon}</span>}
+      {children}
+    </div>
   )
 }
 

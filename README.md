@@ -1,84 +1,136 @@
 # Mom's Kidz v3
 
-A sophisticated web application built with Next.js 13+, designed as both a supportive platform for mothers and a valuable pediatric data acquisition system.
+A sophisticated Next.js 13+ web application designed as both a parenting support platform and pediatric data acquisition system.
 
-## Tech Stack
-
-- **Framework:** Next.js 13+ (App Router)
-- **Language:** TypeScript
-- **Auth:** Supabase Auth
-- **Database:** Supabase (PostgreSQL)
-- **Styling:** Tailwind CSS + shadcn/ui
-- **Animation:** Framer Motion
-- **State Management:** Zustand
-- **Form Handling:** React Hook Form + Zod
-- **Data Visualization:** Recharts
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- Supabase account and project
-
-### Environment Setup
-
-1. Copy the example environment file:
-```bash
-cp .env.example .env.local
-```
-
-2. Update the environment variables in `.env.local`:
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
-
-### Installation
+## Quick Start
 
 1. Install dependencies:
 ```bash
-npm install
+make install
 ```
 
-2. Initialize the database:
+2. Initialize monitoring stack:
 ```bash
-npm run db:migrate
-npm run db:seed
+make monitoring-init
 ```
 
-3. Start the development server:
+3. Start all services:
 ```bash
-npm run dev
+make start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open Grafana dashboard:
+```bash
+make monitoring-dashboard
+```
+
+## Development
+
+Start the development server:
+```bash
+make dev
+```
+
+Format and lint code:
+```bash
+make format
+make lint
+```
 
 ## Database Management
 
-The project includes several scripts for managing the Supabase database:
-
-- `npm run db:migrate` - Run all migrations
-- `npm run db:seed` - Run database seeds
-- `npm run db:reset` - Reset database and run migrations and seeds
-
-## Project Structure
-
+Run migrations:
+```bash
+make db-migrate
 ```
-src/
-├── app/                    # Next.js 13 App Router
-│   ├── api/               # API routes
-│   ├── (auth)/           # Authentication pages
-│   └── (dashboard)/      # Protected dashboard routes
-├── components/            # React Components
-│   ├── ui/               # UI Components
-│   ├── layout/           # Layout Components
-│   └── providers/        # Context Providers
-├── contexts/             # React Context providers
-├── hooks/                # Custom React hooks
-├── lib/                  # Core utilities
-├── types/                # TypeScript definitions
-└── utils/                # Utility functions
+
+Seed database:
+```bash
+make db-seed
+```
+
+Reset database:
+```bash
+make db-reset
+```
+
+## Monitoring & Analytics
+
+The application includes a comprehensive monitoring stack with:
+
+- **Grafana** (http://localhost:3001): Visualization and dashboards
+- **Prometheus** (http://localhost:9090): Metrics collection
+- **Loki** (http://localhost:3100): Log aggregation
+
+### Dashboards
+
+1. **Main Dashboard**
+   - System health metrics
+   - User engagement statistics
+   - API performance metrics
+   - Error rates
+
+2. **Care Log Analytics**
+   - Entry patterns
+   - User participation
+   - Activity trends
+   - Streak tracking
+
+3. **Community Metrics**
+   - Content creation rates
+   - User interactions
+   - Engagement trends
+   - Popular content
+
+### Monitoring Commands
+
+View service status:
+```bash
+make status
+```
+
+View service logs:
+```bash
+make logs service=app      # Main application logs
+make logs service=grafana  # Grafana logs
+make logs service=loki    # Loki logs
+```
+
+Create backup:
+```bash
+make backup
+```
+
+Restore from backup:
+```bash
+make restore dir=backups/20240315_120000
+```
+
+Update services:
+```bash
+make update
+```
+
+## Service Management
+
+Start all services:
+```bash
+make start
+```
+
+Stop all services:
+```bash
+make stop
+```
+
+Restart all services:
+```bash
+make restart
+```
+
+Clean up:
+```bash
+make clean
 ```
 
 ## Features
@@ -96,50 +148,22 @@ src/
 - 🎮 Gamification system
 - 📈 Progress tracking
 - 🤝 Social features
+- 📊 Real-time analytics
+- 🔔 Push notifications
+- 📱 PWA support
 
-## Development
+## Tech Stack
 
-### Code Style
-
-The project uses ESLint and Prettier for code formatting. Format your code using:
-
-```bash
-npm run format
-```
-
-Check formatting without making changes:
-
-```bash
-npm run format:check
-```
-
-### Adding New Features
-
-1. Create a new branch:
-```bash
-git checkout -b feature/your-feature-name
-```
-
-2. Make your changes and commit them:
-```bash
-git commit -m "feat: add your feature"
-```
-
-3. Push to your branch:
-```bash
-git push origin feature/your-feature-name
-```
-
-4. Create a Pull Request
-
-## Deployment
-
-The application can be deployed to any platform that supports Next.js applications. For production builds:
-
-```bash
-npm run build
-npm start
-```
+- **Framework:** Next.js 13+ (App Router)
+- **Language:** TypeScript
+- **Auth:** Supabase Auth
+- **Database:** Supabase (PostgreSQL)
+- **Styling:** Tailwind CSS + shadcn/ui
+- **Animation:** Framer Motion
+- **State Management:** Zustand
+- **Form Handling:** React Hook Form + Zod
+- **Data Visualization:** Recharts
+- **Monitoring:** Grafana + Prometheus + Loki
 
 ## Contributing
 

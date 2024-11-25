@@ -7,17 +7,32 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Existing models
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  password      String
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  activities    Activity[]
-  achievements  Achievement[]
+  id                String            @id @default(cuid())
+  name              String?
+  email             String            @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  activities        Activity[]
+  achievements      Achievement[]
+  // Community features
+  posts             CommunityPost[]
+  comments          PostComment[]
+  likes             PostLike[]
+  shares            PostShare[]
+  bookmarks         PostBookmark[]
+  podcasts          Podcast[]
+  articles          Article[]
+  streaks           Streak[]
+  // New care log relations
+  careLogEntries    CareLogEntry[]
+  careLogAnalytics  CareLogAnalytics[]
+  careLogTemplates  CareLogTemplate[]
+  careLogReminders  CareLogReminder[]
 }
 
 model Activity {
@@ -36,4 +51,249 @@ model Achievement {
   date        DateTime @default(now())
   userId      String
   user        User     @relation(fields: [userId], references: [id])
+  // Care log related fields
+  requirements Json?   // For care log related achievements
+  progress     Float   @default(0)
+}
+
+// New community models
+model CommunityPost {
+  id          String      @id @default(cuid())
+  type        PostType    // 'article' | 'podcast' | 'discussion' | 'milestone'
+  title       String?
+  content     String
+  mediaUrl    String?
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  tags        Tag[]
+  likes       PostLike[]
+  comments    PostComment[]
+  shares      PostShare[]
+  bookmarks   PostBookmark[]
+  metadata    Json?       // For additional type-specific data
+}
+
+enum PostType {
+  ARTICLE
+  PODCAST
+  DISCUSSION
+  MILESTONE
+}
+
+model PostComment {
+  id        String        @id @default(cuid())
+  content   String
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  parentId  String?       // For nested comments
+  parent    PostComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   PostComment[] @relation("CommentReplies")
+}
+
+model PostLike {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  createdAt DateTime      @default(now())
+
+  @@unique([userId, postId])
+}
+
+model PostShare {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  createdAt DateTime      @default(now())
+}
+
+model PostBookmark {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  postId    String
+  post      CommunityPost @relation(fields: [postId], references: [id])
+  createdAt DateTime      @default(now())
+
+  @@unique([userId, postId])
+}
+
+model Tag {
+  id        String          @id @default(cuid())
+  name      String          @unique
+  posts     CommunityPost[]
+  createdAt DateTime        @default(now())
+}
+
+model Podcast {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  audioUrl    String
+  duration    Int
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  coverImage  String?
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  metadata    Json?     // For additional article-specific data
+}
+
+model Streak {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  type        String    // Type of streak (e.g., 'daily_login', 'content_creation')
+  count       Int       @default(0)
+  lastUpdated DateTime  @default(now())
+  startedAt   DateTime  @default(now())
+  metadata    Json?     // For additional streak-specific data
+  // Care log related fields
+  careLogStreak Int     @default(0)
+  lastCareLog   DateTime?
+
+  @@unique([userId, type])
+}
+
+// AI Chat models
+model ChatMessage {
+  id        String    @id @default(cuid())
+  userId    String
+  role      String    // 'user' | 'assistant'
+  content   String
+  imageUrl  String?   // For image analysis messages
+  metadata  Json?     // For additional message data
+  createdAt DateTime  @default(now())
+}
+
+// Analytics models for rich data collection
+model UserAnalytics {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  totalPosts          Int       @default(0)
+  totalComments       Int       @default(0)
+  totalLikes          Int       @default(0)
+  totalShares         Int       @default(0)
+  engagementScore     Float     @default(0)
+  lastActive          DateTime  @default(now())
+  metadata            Json?     // For additional analytics data
+  updatedAt           DateTime  @updatedAt
+  // Care log fields
+  totalCareLogEntries Int       @default(0)
+  lastCareLogEntry    DateTime?
+  careLogStats        Json?     // For storing aggregated stats
+}
+
+model ContentAnalytics {
+  id            String    @id @default(cuid())
+  contentId     String    // Reference to any content type
+  contentType   String    // Type of content being analyzed
+  views         Int       @default(0)
+  uniqueViews   Int       @default(0)
+  avgTimeSpent  Float     @default(0)
+  metadata      Json?     // For additional analytics data
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([contentId, contentType])
+}
+
+// New care log models
+model CareLogEntry {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  type        String    // health, sleep, feeding, milestone, activity
+  title       String
+  description String?
+  timestamp   DateTime  @default(now())
+  duration    Int?      // in minutes
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId, timestamp])
+  @@index([type])
+}
+
+model CareLogAnalytics {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  period        String   // daily, weekly, monthly
+  startDate     DateTime
+  endDate       DateTime
+  totalEntries  Int
+  typeBreakdown Json     // Distribution of entry types
+  avgDuration   Float?
+  trends        Json?    // Identified patterns and trends
+  insights      Json?    // AI-generated insights
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, period, startDate])
+  @@index([userId, period])
+}
+
+model CareLogTemplate {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  name        String
+  type        String
+  template    Json     // Template data structure
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, name])
+}
+
+model CareLogReminder {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        String
+  title       String
+  schedule    Json     // Reminder schedule configuration
+  isActive    Boolean  @default(true)
+  lastTriggered DateTime?
+  nextTrigger  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId, isActive])
+  @@index([nextTrigger])
+}
+
+model Challenge {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime
+  endDate     DateTime
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  // Care log related fields
+  requirements Json?   // For care log related challenges
+  progress     Float   @default(0)
 }

@@ -1,0 +1,28 @@
+# Mom's Kidz Log Management Cron Jobs
+
+# Rotate logs daily at 1 AM
+0 1 * * * /home/lazy/Projects/moms-kidz-v3/scripts/manage-logs.sh rotate
+
+# Clean old logs weekly on Sunday at 2 AM
+0 2 * * 0 /home/lazy/Projects/moms-kidz-v3/scripts/manage-logs.sh clean
+
+# Archive logs monthly on the 1st at 3 AM
+0 3 1 * * /home/lazy/Projects/moms-kidz-v3/scripts/manage-logs.sh archive
+
+# Analyze logs daily at 4 AM and send report
+0 4 * * * /home/lazy/Projects/moms-kidz-v3/scripts/manage-logs.sh analyze > /home/lazy/Projects/moms-kidz-v3/logs/system/daily-analysis.log 2>&1
+
+# Monitor system health every 5 minutes
+*/5 * * * * /home/lazy/Projects/moms-kidz-v3/scripts/manage.sh status > /home/lazy/Projects/moms-kidz-v3/logs/system/health-check.log 2>&1
+
+# Backup monitoring data weekly on Sunday at 5 AM
+0 5 * * 0 /home/lazy/Projects/moms-kidz-v3/scripts/manage.sh backup > /home/lazy/Projects/moms-kidz-v3/logs/system/backup.log 2>&1
+
+# Update monitoring stack monthly on the 1st at 6 AM
+0 6 1 * * /home/lazy/Projects/moms-kidz-v3/scripts/update-monitoring.sh > /home/lazy/Projects/moms-kidz-v3/logs/system/monitoring-update.log 2>&1
+
+# Note: Replace /home/lazy/Projects/moms-kidz-v3 with the actual path to your project
+# To install these cron jobs:
+# 1. Copy this file to a temporary location
+# 2. Edit the paths to match your system
+# 3. Run: crontab /path/to/this/file

@@ -1,0 +1,119 @@
+groups:
+  - name: mom-kidz-alerts
+    rules:
+      # User Activity Alerts
+      - alert: HighUserInactivity
+        expr: rate(user_activity_count[1h]) < 10
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low user activity detected"
+          description: "User activity has dropped below normal levels in the last hour"
+
+      - alert: UnusualLoginPattern
+        expr: rate(login_attempts[5m]) > 100
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Unusual login pattern detected"
+          description: "High number of login attempts detected in the last 5 minutes"
+
+      # Care Log Alerts
+      - alert: CareLogEntryDecrease
+        expr: rate(care_log_entries_total[6h]) < histogram_quantile(0.1, rate(care_log_entries_bucket[24h]))
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Care log entries have decreased significantly"
+          description: "The rate of care log entries is lower than usual"
+
+      - alert: MissingDailyCareLog
+        expr: time() - max(care_log_last_entry) by (user_id) > 86400
+        for: 12h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Users missing daily care log entries"
+          description: "Some users haven't logged any care activities in the last 24 hours"
+
+      # System Health Alerts
+      - alert: HighAPILatency
+        expr: api_request_duration_seconds{quantile="0.95"} > 2
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High API latency detected"
+          description: "95th percentile of API request duration is above 2 seconds"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% in the last 5 minutes"
+
+      # Database Alerts
+      - alert: HighDatabaseConnections
+        expr: pg_stat_activity_count > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of database connections"
+          description: "Database connection count is above normal levels"
+
+      - alert: SlowQueries
+        expr: pg_stat_activity_max_tx_duration > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Some database queries are taking longer than 30 seconds"
+
+      # Community Engagement Alerts
+      - alert: LowCommunityEngagement
+        expr: rate(community_interactions_total[6h]) < histogram_quantile(0.1, rate(community_interactions_bucket[24h]))
+        for: 2h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low community engagement detected"
+          description: "Community interaction rate is lower than usual"
+
+      # Content Creation Alerts
+      - alert: ContentCreationDecrease
+        expr: rate(content_created_total[12h]) < histogram_quantile(0.1, rate(content_created_bucket[7d]))
+        for: 6h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Content creation has decreased"
+          description: "The rate of new content creation is lower than usual"
+
+  # Recording rules for frequently used queries
+  - name: mom-kidz-recordings
+    rules:
+      - record: job:care_log_entries:rate5m
+        expr: rate(care_log_entries_total[5m])
+
+      - record: job:user_activity:rate1h
+        expr: rate(user_activity_count[1h])
+
+      - record: job:community_engagement:daily
+        expr: sum(rate(community_interactions_total[24h])) by (type)
+
+      - record: job:content_creation:weekly
+        expr: sum(rate(content_created_total[7d])) by (type)
+
+      - record: job:api_latency:p95
+        expr: histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[5m])) by (le))
+
+      - record: job:error_rate:5m
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))

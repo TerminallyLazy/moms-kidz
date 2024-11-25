@@ -1,229 +1,235 @@
 import { supabase } from './supabase'
-import { ImageUtils } from './image-utils'
 import { logger } from './logger'
 
+interface UploadOptions {
+  bucket: string
+  path: string
+  contentType?: string
+  maxSize?: number // in bytes
+}
+
 export class StorageUtils {
+  private static readonly DEFAULT_MAX_SIZE = 100 * 1024 * 1024 // 100MB
+  private static readonly ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+  private static readonly ALLOWED_AUDIO_TYPES = ['audio/mpeg', 'audio/wav', 'audio/webm']
+
   /**
-   * Upload file to Supabase storage
+   * Upload a file to storage
    */
   static async uploadFile(
     file: File,
-    options: {
-      bucket?: string;
-      path?: string;
-      upsert?: boolean;
-      compress?: boolean;
-      generateThumbnail?: boolean;
-    } = {}
-  ): Promise<{ url: string; thumbnailUrl?: string }> {
+    options: UploadOptions
+  ): Promise<{ url: string; path: string }> {
     try {
-      const {
-        bucket = 'public',
-        path = '',
-        upsert = false,
-        compress = true,
-        generateThumbnail = false
-      } = options
+      // Validate file size
+      const maxSize = options.maxSize || this.DEFAULT_MAX_SIZE
+      if (file.size > maxSize) {
+        throw new Error(`File size exceeds maximum limit of ${maxSize / (1024 * 1024)}MB`)
+      }
 
-      // Process file before upload
-      let processedFile: File | Blob = file
-      if (compress && ImageUtils.isImage(file)) {
-        processedFile = await ImageUtils.compressImage(file)
+      // Validate content type if specified
+      if (options.contentType) {
+        if (options.contentType.startsWith('image/') && !this.ALLOWED_IMAGE_TYPES.includes(file.type)) {
+          throw new Error('Invalid image type. Allowed types: JPEG, PNG, WebP')
+        }
+        if (options.contentType.startsWith('audio/') && !this.ALLOWED_AUDIO_TYPES.includes(file.type)) {
+          throw new Error('Invalid audio type. Allowed types: MP3, WAV, WebM')
+        }
       }
 
       // Generate unique filename
       const timestamp = Date.now()
-      const extension = file.name.split('.').pop() || ImageUtils.getExtensionFromMimeType(file.type)
-      const filename = `${timestamp}.${extension}`
-      const fullPath = path ? `${path}/${filename}` : filename
+      const randomString = Math.random().toString(36).substring(2, 15)
+      const fileExtension = file.name.split('.').pop()
+      const fileName = `${timestamp}-${randomString}.${fileExtension}`
+      const filePath = `${options.path}/${fileName}`
 
       // Upload file
       const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(fullPath, processedFile, {
-          upsert,
-          contentType: file.type
+        .from(options.bucket)
+        .upload(filePath, file, {
+          contentType: file.type,
+          cacheControl: '3600',
+          upsert: false
         })
 
       if (error) throw error
 
       // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
+      const { data: { publicUrl }, error: urlError } = supabase.storage
+        .from(options.bucket)
         .getPublicUrl(data.path)
 
-      // Generate and upload thumbnail if requested
-      let thumbnailUrl: string | undefined
-      if (generateThumbnail && ImageUtils.isImage(file)) {
-        const thumbnail = await ImageUtils.generateThumbnail(file)
-        const thumbnailPath = path ? `${path}/thumbnails/${filename}` : `thumbnails/${filename}`
-        
-        const { data: thumbnailData, error: thumbnailError } = await supabase.storage
-          .from(bucket)
-          .upload(thumbnailPath, thumbnail, {
-            upsert,
-            contentType: 'image/jpeg'
-          })
+      if (urlError) throw urlError
 
-        if (!thumbnailError && thumbnailData) {
-          const { data: { publicUrl: thumbUrl } } = supabase.storage
-            .from(bucket)
-            .getPublicUrl(thumbnailData.path)
-          thumbnailUrl = thumbUrl
-        }
-      }
-
-      return { url: publicUrl, thumbnailUrl }
-    } catch (error) {
-      logger.error('Error uploading file', error as Error, {
-        filename: file.name,
+      logger.info('File uploaded successfully', {
+        bucket: options.bucket,
+        path: data.path,
         size: file.size,
         type: file.type
       })
+
+      return {
+        url: publicUrl,
+        path: data.path
+      }
+    } catch (error) {
+      logger.error('Error uploading file:', error)
       throw error
     }
   }
 
   /**
-   * Delete file from Supabase storage
+   * Upload multiple files
    */
-  static async deleteFile(
-    path: string,
-    options: {
-      bucket?: string;
-      deleteThumbnail?: boolean;
-    } = {}
-  ): Promise<void> {
-    try {
-      const {
-        bucket = 'public',
-        deleteThumbnail = false
-      } = options
+  static async uploadFiles(
+    files: File[],
+    options: UploadOptions
+  ): Promise<Array<{ url: string; path: string }>> {
+    return Promise.all(files.map(file => this.uploadFile(file, options)))
+  }
 
-      // Delete main file
+  /**
+   * Delete a file from storage
+   */
+  static async deleteFile(bucket: string, path: string): Promise<void> {
+    try {
       const { error } = await supabase.storage
         .from(bucket)
         .remove([path])
 
       if (error) throw error
 
-      // Delete thumbnail if requested
-      if (deleteThumbnail) {
-        const thumbnailPath = path.replace(/^(.+)\/([^\/]+)$/, '$1/thumbnails/$2')
-        await supabase.storage
-          .from(bucket)
-          .remove([thumbnailPath])
-          .catch(error => logger.warn('Error deleting thumbnail', error))
-      }
+      logger.info('File deleted successfully', {
+        bucket,
+        path
+      })
     } catch (error) {
-      logger.error('Error deleting file', error as Error, { path })
+      logger.error('Error deleting file:', error)
       throw error
     }
   }
 
   /**
-   * Get file metadata from Supabase storage
+   * Get file metadata
    */
-  static async getFileMetadata(
-    path: string,
-    options: {
-      bucket?: string;
-    } = {}
-  ) {
+  static async getFileMetadata(bucket: string, path: string) {
     try {
-      const { bucket = 'public' } = options
-
       const { data, error } = await supabase.storage
         .from(bucket)
-        .list(path.split('/').slice(0, -1).join('/'), {
+        .list(path, {
           limit: 1,
           offset: 0,
-          search: path.split('/').pop()
+          sortBy: { column: 'name', order: 'asc' }
         })
 
       if (error) throw error
+      if (!data.length) throw new Error('File not found')
+
       return data[0]
     } catch (error) {
-      logger.error('Error getting file metadata', error as Error, { path })
+      logger.error('Error getting file metadata:', error)
       throw error
     }
   }
 
   /**
-   * Move file in Supabase storage
+   * Create a signed URL for temporary access
+   */
+  static async createSignedUrl(
+    bucket: string,
+    path: string,
+    expiresIn: number = 3600
+  ): Promise<string> {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(path, expiresIn)
+
+      if (error) throw error
+      if (!data?.signedUrl) throw new Error('Failed to create signed URL')
+
+      return data.signedUrl
+    } catch (error) {
+      logger.error('Error creating signed URL:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Move a file within storage
    */
   static async moveFile(
+    bucket: string,
     fromPath: string,
-    toPath: string,
-    options: {
-      bucket?: string;
-      moveThumbnail?: boolean;
-    } = {}
+    toPath: string
   ): Promise<void> {
     try {
-      const {
-        bucket = 'public',
-        moveThumbnail = false
-      } = options
-
-      // Move main file
       const { error } = await supabase.storage
         .from(bucket)
         .move(fromPath, toPath)
 
       if (error) throw error
 
-      // Move thumbnail if requested
-      if (moveThumbnail) {
-        const fromThumbnailPath = fromPath.replace(/^(.+)\/([^\/]+)$/, '$1/thumbnails/$2')
-        const toThumbnailPath = toPath.replace(/^(.+)\/([^\/]+)$/, '$1/thumbnails/$2')
-        
-        await supabase.storage
-          .from(bucket)
-          .move(fromThumbnailPath, toThumbnailPath)
-          .catch(error => logger.warn('Error moving thumbnail', error))
-      }
+      logger.info('File moved successfully', {
+        bucket,
+        fromPath,
+        toPath
+      })
     } catch (error) {
-      logger.error('Error moving file', error as Error, { fromPath, toPath })
+      logger.error('Error moving file:', error)
       throw error
     }
   }
 
   /**
-   * List files in Supabase storage
+   * Copy a file within storage
+   */
+  static async copyFile(
+    bucket: string,
+    fromPath: string,
+    toPath: string
+  ): Promise<void> {
+    try {
+      const { error } = await supabase.storage
+        .from(bucket)
+        .copy(fromPath, toPath)
+
+      if (error) throw error
+
+      logger.info('File copied successfully', {
+        bucket,
+        fromPath,
+        toPath
+      })
+    } catch (error) {
+      logger.error('Error copying file:', error)
+      throw error
+    }
+  }
+
+  /**
+   * List files in a bucket directory
    */
   static async listFiles(
+    bucket: string,
     path: string = '',
     options: {
-      bucket?: string;
-      limit?: number;
-      offset?: number;
-      sortBy?: string;
-      search?: string;
+      limit?: number
+      offset?: number
+      sortBy?: { column: string; order: 'asc' | 'desc' }
     } = {}
   ) {
     try {
-      const {
-        bucket = 'public',
-        limit = 100,
-        offset = 0,
-        sortBy,
-        search
-      } = options
-
       const { data, error } = await supabase.storage
         .from(bucket)
-        .list(path, {
-          limit,
-          offset,
-          sortBy,
-          search
-        })
+        .list(path, options)
 
       if (error) throw error
+
       return data
     } catch (error) {
-      logger.error('Error listing files', error as Error, { path })
+      logger.error('Error listing files:', error)
       throw error
     }
   }

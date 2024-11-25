@@ -1,46 +1,78 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useReducer } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { toast } from 'sonner'
-import { Card } from '@/components/ui/card'
-import { 
-  Achievement,
-  Challenge,
-  Streak,
-  UserStats,
-  ActivityPoints,
-  DEFAULT_ACTIVITY_POINTS,
-  PointsTransaction
-} from '@/types/gamification'
+import { createContext, useContext, useReducer, useEffect } from 'react'
+import { logger } from '@/lib/logger'
+import { prisma } from '@/lib/db'
+import { PointsTransaction } from '@/types/gamification'
 
-// Types
-export type GamificationEvent = {
-  type: 'activity_log' | 'milestone' | 'social' | 'content' | 'challenge'
-  action: string
-  metadata?: {
-    withPhoto?: boolean
-    withNotes?: boolean
-    weather?: 'rainy' | 'sunny' | 'snowy' | 'severe'
-    time?: Date
-    quality?: 'high' | 'standard'
-    [key: string]: any
+interface GamificationState {
+  points: number
+  level: number
+  streaks: {
+    [key: string]: number
   }
-  timestamp: number
+  achievements: Achievement[]
+  challenges: Challenge[]
+  rewards: Reward[]
 }
 
-// Initial State
-const initialState: UserStats = {
-  totalPoints: 0,
+interface Achievement {
+  id: string
+  title: string
+  description: string
+  points: number
+  unlockedAt?: Date
+  type: string
+  progress: number
+  metadata?: any
+}
+
+interface Challenge {
+  id: string
+  title: string
+  description: string
+  points: number
+  type: string
+  requirements: any
+  progress: number
+  expiresAt?: Date
+  metadata?: any
+}
+
+interface Reward {
+  id: string
+  title: string
+  description: string
+  cost: number
+  type: string
+  claimed: boolean
+  metadata?: any
+}
+
+type GamificationAction =
+  | { type: 'ADD_POINTS'; payload: number }
+  | { type: 'UPDATE_LEVEL'; payload: number }
+  | { type: 'UPDATE_STREAK'; payload: { type: string; count: number } }
+  | { type: 'UNLOCK_ACHIEVEMENT'; payload: Achievement }
+  | { type: 'UPDATE_CHALLENGE'; payload: Challenge }
+  | { type: 'CLAIM_REWARD'; payload: string }
+  | { type: 'SET_STATE'; payload: Partial<GamificationState> }
+
+interface GamificationContextType extends GamificationState {
+  addPoints: (points: number, reason: string) => Promise<void>
+  trackActivity: (type: string, metadata?: any) => Promise<void>
+  checkAchievements: () => Promise<void>
+  claimReward: (rewardId: string) => Promise<void>
+  getProgress: (type: string) => number
+}
+
+const initialState: GamificationState = {
+  points: 0,
   level: 1,
-  xp: 0,
-  xpToNextLevel: 100,
+  streaks: {},
   achievements: [],
-  activeChallenges: [],
-  completedChallenges: [],
-  streaks: [],
-  pointsHistory: [],
-  challengesCompleted: undefined
+  challenges: [],
+  rewards: []
 }
 
 // Action Types
@@ -150,19 +182,63 @@ function gamificationReducer(state: UserStats, action: GamificationAction): User
   }
 }
 
-// Context
-const GamificationContext = createContext<{
-  state: UserStats
-  dispatch: React.Dispatch<GamificationAction>
-  trackEvent: (event: GamificationEvent) => void
-  checkAchievements: () => void
-} | null>(null)
+const GamificationContext = createContext<GamificationContextType | undefined>(undefined)
 
-// Provider Component
+function gamificationReducer(state: GamificationState, action: GamificationAction): GamificationState {
+  switch (action.type) {
+    case 'ADD_POINTS':
+      return {
+        ...state,
+        points: state.points + action.payload
+      }
+    case 'UPDATE_LEVEL':
+      return {
+        ...state,
+        level: action.payload
+      }
+    case 'UPDATE_STREAK':
+      return {
+        ...state,
+        streaks: {
+          ...state.streaks,
+          [action.payload.type]: action.payload.count
+        }
+      }
+    case 'UNLOCK_ACHIEVEMENT':
+      return {
+        ...state,
+        achievements: [...state.achievements, action.payload]
+      }
+    case 'UPDATE_CHALLENGE':
+      return {
+        ...state,
+        challenges: state.challenges.map(challenge =>
+          challenge.id === action.payload.id ? action.payload : challenge
+        )
+      }
+    case 'CLAIM_REWARD':
+      return {
+        ...state,
+        rewards: state.rewards.map(reward =>
+          reward.id === action.payload ? { ...reward, claimed: true } : reward
+        )
+      }
+    case 'SET_STATE':
+      return {
+        ...state,
+        ...action.payload
+      }
+    default:
+      return state
+  }
+}
+
 export function GamificationProvider({
   children,
+  userId
 }: {
   children: React.ReactNode
+  userId: string
 }) {
   const [state, dispatch] = useReducer(gamificationReducer, initialState)
 

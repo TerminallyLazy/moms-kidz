@@ -1,8 +1,7 @@
 {
-  "/page": "app/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
   "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
-  "/(dashboard)/profile/page": "app/(dashboard)/profile/page.js",
+  "/(dashboard)/care-log/page": "app/(dashboard)/care-log/page.js",
   "/(dashboard)/activities/page": "app/(dashboard)/activities/page.js",
-  "/(dashboard)/member/page": "app/(dashboard)/member/page.js"
+  "/(dashboard)/profile/page": "app/(dashboard)/profile/page.js",
+  "/(dashboard)/achievements/page": "app/(dashboard)/achievements/page.js"
 }

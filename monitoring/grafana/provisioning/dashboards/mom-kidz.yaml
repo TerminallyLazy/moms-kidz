@@ -1,0 +1,15 @@
+apiVersion: 1
+
+providers:
+  - name: 'Mom Kidz Dashboards'
+    orgId: 1
+    folder: 'Mom Kidz'
+    folderUid: 'mom-kidz'
+    type: file
+    disableDeletion: true
+    editable: true
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: true

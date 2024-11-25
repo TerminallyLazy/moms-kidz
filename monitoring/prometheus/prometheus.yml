@@ -1,0 +1,106 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+      scheme: http
+      timeout: 10s
+      api_version: v1
+
+scrape_configs:
+  - job_name: prometheus
+    honor_timestamps: true
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+    scheme: http
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: node-exporter
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  - job_name: postgres-exporter
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  - job_name: mom-kidz-app
+    metrics_path: /api/metrics
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 10s
+
+  # Custom metrics for Mom's Kidz
+  - job_name: mom-kidz-custom-metrics
+    metrics_path: /api/custom-metrics
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 30s
+
+  # User activity metrics
+  - job_name: mom-kidz-user-activity
+    metrics_path: /api/metrics/user-activity
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 1m
+
+  # Care log metrics
+  - job_name: mom-kidz-care-log
+    metrics_path: /api/metrics/care-log
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 1m
+
+  # Community metrics
+  - job_name: mom-kidz-community
+    metrics_path: /api/metrics/community
+    static_configs:
+      - targets: ['host.docker.internal:3000']
+    scrape_interval: 1m
+
+# Rules for alerting and recording
+rule_files:
+  - "rules/*.yml"
+
+# Remote write configuration for long-term storage (optional)
+remote_write:
+  - url: "http://remote-storage:9201/write"
+    remote_timeout: 30s
+    queue_config:
+      capacity: 500
+      max_shards: 1000
+      max_samples_per_send: 100
+      batch_send_deadline: 5s
+      min_backoff: 30ms
+      max_backoff: 100ms
+
+# Remote read configuration (optional)
+remote_read:
+  - url: "http://remote-storage:9201/read"
+    read_recent: true
+
+# Storage configuration
+storage:
+  tsdb:
+    path: /prometheus
+    retention_time: 15d
+    retention_size: 0
+    wal_compression: true
+  agent:
+    wal_compression: true
+
+# Web configuration
+web:
+  console:
+    templates: /etc/prometheus/consoles
+    libraries: /etc/prometheus/console_libraries
+  cors:
+    max_age: 86400
+  enable_lifecycle: true
+  enable_admin_api: true
+  page_title: "Mom's Kidz Prometheus"

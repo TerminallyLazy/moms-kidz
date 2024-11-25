@@ -43,16 +43,15 @@ export default function DashboardLayout({
         <div className="container flex h-14 items-center">
           {/* Logo - Always visible */}
           <div className="mr-4 hidden md:flex">
-            <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
-              <Icons.logo className="h-6 w-6" />
-              <span className="font-bold">Mom's Kidz</span>
+            <Link href="/dashboard" className="mr-6 flex items-center">
+              <img src="/mklogo.png" alt="Mom's Kidz Logo" className="h-8" />
             </Link>
           </div>
 
           {/* Mobile Logo */}
           <div className="mr-4 flex md:hidden">
             <Link href="/dashboard" className="flex items-center space-x-2">
-              <Icons.logo className="h-6 w-6" />
+              <img src="/logo.png" className="h-6 w-6" />
             </Link>
           </div>
 

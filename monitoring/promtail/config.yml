@@ -1,0 +1,210 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Application logs
+  - job_name: mom-kidz-app
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: mom-kidz
+          app: mom-kidz
+          env: production
+          __path__: /var/log/mom-kidz/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            userId: userId
+            component: component
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      - labels:
+          level:
+          component:
+          userId:
+
+  # Care Log specific logs
+  - job_name: care-log
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: mom-kidz
+          component: care-log
+          __path__: /var/log/mom-kidz/care-log/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            userId: userId
+            entryType: type
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      - labels:
+          level:
+          userId:
+          entryType:
+
+  # Community activity logs
+  - job_name: community
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: mom-kidz
+          component: community
+          __path__: /var/log/mom-kidz/community/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            userId: userId
+            activityType: type
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      - labels:
+          level:
+          userId:
+          activityType:
+
+  # API logs
+  - job_name: api
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: mom-kidz
+          component: api
+          __path__: /var/log/mom-kidz/api/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            method: method
+            path: path
+            status: status
+            duration: duration
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      - labels:
+          level:
+          method:
+          status:
+
+  # Error logs
+  - job_name: errors
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: mom-kidz
+          component: errors
+          __path__: /var/log/mom-kidz/error/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            error: error
+            stack: stack
+            component: component
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      - labels:
+          level:
+          component:
+
+  # System logs
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: mom-kidz
+          component: system
+          __path__: /var/log/mom-kidz/system/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            subsystem: subsystem
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      - labels:
+          level:
+          subsystem:
+
+  # Database logs
+  - job_name: database
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: mom-kidz
+          component: database
+          __path__: /var/log/mom-kidz/db/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            query: query
+            duration: duration
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      - labels:
+          level:
+
+  # AI Chat logs
+  - job_name: ai-chat
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: mom-kidz
+          component: ai-chat
+          __path__: /var/log/mom-kidz/ai-chat/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            userId: userId
+            modelType: modelType
+            duration: duration
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      - labels:
+          level:
+          userId:
+          modelType:
